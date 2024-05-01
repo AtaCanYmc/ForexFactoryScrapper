@@ -19,7 +19,6 @@ def daily_data():
     month = request.args.get('month')
     year = request.args.get('year')
 
-    # Parametrelerin geçerliliğini kontrol et
     if not (day and month and year):
         return jsonify({
             'error': 'Missing one or more required parameters: day, month, year'
@@ -31,4 +30,4 @@ def daily_data():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
