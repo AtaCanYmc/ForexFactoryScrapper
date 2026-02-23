@@ -36,7 +36,7 @@ pip install -r requirements.txt
 Start the application locally:
 
 ```bash
-python main.py
+python app.py
 ```
 
 By default this will start the app on 0.0.0.0:5000. Example endpoints you can call:

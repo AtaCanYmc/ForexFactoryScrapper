@@ -2,14 +2,20 @@ import importlib
 import os
 import sys
 
-# Put project root on sys.path so we can import the application module.
+# Add project src directory and project root to sys.path so tests can import
+# the application module from src/ during test runs.
 ROOT = os.path.dirname(os.path.dirname(__file__))
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
+SRC = os.path.join(ROOT, "src")
+for p in (SRC, ROOT):
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
 # Import the app module dynamically so linters don't complain about code
 # executing before imports.
 main = importlib.import_module("main")
+# Import the actual application module implemented in src/app.py so tests
+# can monkeypatch the functions the routes call.
+src_app = importlib.import_module("src.app")
 app = main.app
 
 SAMPLE_RECORDS = [
@@ -58,7 +64,13 @@ def test_forex_out_of_range():
 
 
 def test_forex_success(monkeypatch):
-    # Patch main.getRecords and main.getURL to avoid network calls
+    # Patch the functions used by the Flask routes to avoid network calls.
+    monkeypatch.setattr(src_app, "getRecords", lambda url: SAMPLE_RECORDS)
+    monkeypatch.setattr(
+        src_app, "getURL", lambda day, month, year, timeline: "http://example"
+    )
+
+    # Also patch top-level main module references for completeness.
     monkeypatch.setattr(main, "getRecords", lambda url: SAMPLE_RECORDS)
     monkeypatch.setattr(
         main, "getURL", lambda day, month, year, timeline: "http://example"
