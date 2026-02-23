@@ -1,9 +1,18 @@
 import logging
+import os
 
+from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from forexFactoryScrapper import getRecords, getURL
+
+# Load .env file if present. Use DOTENV_PATH to override if needed.
+dotenv_path = os.getenv("DOTENV_PATH")
+if dotenv_path:
+    load_dotenv(dotenv_path)
+else:
+    load_dotenv()  # will search for a .env file in cwd or parent directories
 
 app = Flask(__name__)
 CORS(app)
@@ -70,6 +79,31 @@ def daily_data():
 
 
 if __name__ == "__main__":
-    # Keep debug configurable via env if desired.
-    # Default to False in production.
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # Allow configuration via environment variables or .env file.
+    # Defaults keep previous behavior.
+    host = os.getenv("HOST", "0.0.0.0")
+    try:
+        port = int(os.getenv("PORT", "5000"))
+    except ValueError:
+        logger.warning("PORT env var is not an integer; falling back to 5000")
+        port = 5000
+
+    debug_env = os.getenv("DEBUG", "True").lower()
+    debug = debug_env in ("1", "true", "yes", "on")
+
+    try:
+        app.run(host=host, port=port, debug=debug)
+    except OSError as e:
+        # Common case: address already in use
+        if (
+            "address already in use" in str(e).lower()
+            or getattr(e, "errno", None) == 98
+        ):
+            logger.error("Port %s is already in use.", port)
+            logger.error("Option 1: stop the process using the port.")
+            logger.error("Example: lsof -i tcp:%s", port)
+            logger.error("Option 2: run this app on a different port.")
+            logger.error("Example: PORT=5001 python main.py")
+        else:
+            logger.exception("Failed to start the Flask app")
+        raise
