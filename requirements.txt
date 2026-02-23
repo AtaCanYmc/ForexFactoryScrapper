@@ -1,6 +1,8 @@
 Flask~=3.0.3
+Flask-Cors~=3.0.10
 cloudscraper~=1.2.71
 pandas~=2.2.2
 beautifulsoup4~=4.12.3
 pytest~=7.4.0
 python-dotenv~=1.0.0
+pre-commit~=3.4.0
