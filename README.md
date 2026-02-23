@@ -1,5 +1,7 @@
 # ForexFactoryScrapper
 
+[![CI](https://github.com/AtaCanYmc/ForexFactoryScrapper/actions/workflows/ci.yml/badge.svg)](https://github.com/AtaCanYmc/ForexFactoryScrapper/actions) [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/AtaCanYmc/ForexFactoryScrapper/blob/main/LICENSE)
+
 **ForexFactoryScrapper** is a Python-based web scraping tool designed to extract financial event data from the [ForexFactory](https://www.forexfactory.com/) website. This project provides a simple and effective way to scrape calendar events, forecast data, actual values, and other relevant information for forex trading analysis.
 
 ## Features
@@ -182,4 +184,4 @@ Contributions, bug reports, and feature requests are welcome. Please open an iss
 
 ## License
 
-This project does not include a license file by default. Add a `LICENSE` if you plan to open-source the project.
+This project is licensed under the MIT License — see the [LICENSE](./LICENSE) file for details.
