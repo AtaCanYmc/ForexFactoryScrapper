@@ -11,7 +11,39 @@
 
 ## Installation
 
-To use ForexFactoryScrapper, you need to have Python installed. Additionally, you should install the following dependencies:
+To use ForexFactoryScrapper, you need to have Python (3.9+) installed. Install project dependencies into a virtual environment:
 
 ```bash
-pip install requests beautifulsoup4
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## Usage (local)
+
+- Çalıştırmak için:
+
+```bash
+python main.py
+```
+
+Bu, uygulamayı yerel olarak 0.0.0.0:5000 üzerinde başlatır. Aşağıdaki örnek uç noktaları kullanabilirsiniz:
+
+- GET /api/hello
+- GET /api/health
+- GET /api/forex/daily?day=1&month=1&year=2020
+
+## Tests
+
+Basit unit testleri çalıştırmak için:
+
+```bash
+pytest -q
+```
+
+Testler `tests/` klasöründe bulunur ve dış bağımlılıkları (ağ çağrılarını) monkeypatch ile izole eder.
+
+## Notes
+
+- Gerçek ağ çağrıları ve parsing, hedef sitenin HTML yapısına bağlıdır; HTML değişirse scraper güncelleme gerektirir.
+- `requirements.txt` içindeki sürümler projenin yerelde kurulup test edilmesi için öneridir.
