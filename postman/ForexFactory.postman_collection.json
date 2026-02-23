@@ -1,0 +1,219 @@
+{
+	"info": {
+		"_postman_id": "dde1c3d4-11f8-4e24-a72c-29ac71447306",
+		"name": "ForexFactory",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27213095"
+	},
+	"item": [
+		{
+			"name": "hello",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {",
+							"    pm.expect(pm.response.code).to.equal(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"Response has required fields: message and status\", function () {",
+							"    const responseData = pm.response.json();",
+							"",
+							"    pm.expect(responseData).to.be.an('object');",
+							"    pm.expect(responseData).to.have.all.keys('message', 'status');",
+							"});",
+							"",
+							"",
+							"pm.test(\"Status must be a non-empty string\", function () {",
+							"    const responseData = pm.response.json();",
+							"    ",
+							"    pm.expect(responseData).to.be.an('object');",
+							"    pm.expect(responseData.status).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, \"Value should not be empty\");",
+							"});",
+							"",
+							"",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"Content-Type is application/json\", function () {",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/hello",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"hello"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "daily forex data",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Response status code is 200', function () {",
+							"    pm.expect(pm.response.code).to.equal(200);",
+							"})",
+							"",
+							"pm.test('Response contains required fields', function () {",
+							"    const responseData = pm.response.json();",
+							"    pm.expect(responseData).to.be.an('array').that.is.not.empty;",
+							"    responseData.forEach(item => {",
+							"        pm.expect(item).to.have.all.keys('Actual', 'Currency', 'Event', 'Forecast', 'Previous', 'Time');",
+							"    });",
+							"})",
+							"",
+							"pm.test('Time should be in a valid time format', function () {",
+							"    const responseData = pm.response.json();",
+							"    pm.expect(responseData).to.be.an('array').that.is.not.empty;",
+							"    responseData.forEach(item => {",
+							"        pm.expect(item.Time).to.exist;",
+							"        pm.expect(item.Time).to.match(/^\\d{2}:\\d{2}:\\d{2}$/);",
+							"    });",
+							"})",
+							"",
+							"pm.test('Currency must be a non-empty string', function () {",
+							"    const responseData = pm.response.json();",
+							"    pm.expect(responseData).to.be.an('array').that.is.not.empty;",
+							"    responseData.forEach(item => {",
+							"        pm.expect(item.Currency).to.exist.and.to.be.a('string').that.is.not.empty;",
+							"    });",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/forex/daily?day=2&month=5&year=2024&limit=5&offset=0",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"forex",
+						"daily"
+					],
+					"query": [
+						{
+							"key": "day",
+							"value": "2"
+						},
+						{
+							"key": "month",
+							"value": "5"
+						},
+						{
+							"key": "year",
+							"value": "2024"
+						},
+						{
+							"key": "limit",
+							"value": "5"
+						},
+						{
+							"key": "offset",
+							"value": "0"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "health",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {",
+							"    pm.expect(pm.response.code).to.equal(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"Response Content-Type is application/json\", function () {",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.include(\"application/json\");",
+							"});",
+							"",
+							"",
+							"pm.test(\"Response should have the required field 'status'\", function () {",
+							"    const responseData = pm.response.json();",
+							"    ",
+							"    pm.expect(responseData).to.be.an('object');",
+							"    pm.expect(responseData).to.have.property('status');",
+							"});",
+							"",
+							"",
+							"pm.test(\"Status must be a non-empty string\", function () {",
+							"    const responseData = pm.response.json();",
+							"    ",
+							"    pm.expect(responseData).to.be.an('object');",
+							"    pm.expect(responseData.status).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, \"Value should not be empty\");",
+							"});",
+							"",
+							"",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/health",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"health"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
