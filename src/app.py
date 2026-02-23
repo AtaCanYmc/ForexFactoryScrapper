@@ -65,6 +65,29 @@ def daily_data():
             400,
         )
 
+    # Optional paging parameters: limit and offset
+    limit_param = request.args.get("limit")
+    offset_param = request.args.get("offset")
+
+    limit = None
+    offset = 0
+
+    if limit_param is not None:
+        try:
+            limit = int(limit_param)
+        except ValueError:
+            return jsonify({"error": "Parameter 'limit' must be an integer"}), 400
+        if limit < 0:
+            return jsonify({"error": "Parameter 'limit' must be >= 0"}), 400
+
+    if offset_param is not None:
+        try:
+            offset = int(offset_param)
+        except ValueError:
+            return jsonify({"error": "Parameter 'offset' must be an integer"}), 400
+        if offset < 0:
+            return jsonify({"error": "Parameter 'offset' must be >= 0"}), 400
+
     try:
         url = getURL(day_i, month_i, year_i, "day")
         record_json = getRecords(url)
@@ -75,7 +98,28 @@ def daily_data():
             502,
         )
 
-    return jsonify(record_json), 200
+    # If records is a list apply paging (offset/limit); otherwise return as-is
+    try:
+        if isinstance(record_json, list):
+            # apply offset
+            if offset and offset > 0:
+                if offset >= len(record_json):
+                    paged = []
+                else:
+                    paged = record_json[offset:]
+            else:
+                paged = record_json[:]
+
+            # apply limit
+            if limit is not None:
+                paged = paged[:limit]
+
+            return jsonify(paged), 200
+        else:
+            return jsonify(record_json), 200
+    except Exception:
+        logger.exception("Failed to apply paging to records")
+        return jsonify({"error": "Failed to process records"}), 500
 
 
 def run_app():

@@ -158,6 +158,47 @@ print(resp.status_code)
 print(resp.json())
 ```
 
+### 5) Forex daily — paging (limit & offset)
+
+This project added optional paging support to the `/api/forex/daily` endpoint via two query parameters: `limit` and `offset`.
+
+- `offset` (optional): integer >= 0, default 0. Skip this many records from the start.
+- `limit` (optional): integer >= 0, default is unlimited. Return at most this many records after applying the offset.
+
+Behavior and validation:
+
+- Both `limit` and `offset` must be integers. Non-integer values return HTTP 400.
+- Negative values return HTTP 400.
+- If `offset` is greater than or equal to the number of available records, the endpoint returns an empty list and HTTP 200.
+- `limit=0` returns an empty list (valid request).
+- If the scraper returns a non-list structure, paging is not applied and the raw response is returned.
+
+Examples:
+
+- First 10 records:
+
+```bash
+curl -sS "http://localhost:5000/api/forex/daily?day=1&month=1&year=2020&limit=10"
+```
+
+- Start from the 5th record and return up to 3 records:
+
+```bash
+curl -sS "http://localhost:5000/api/forex/daily?day=1&month=1&year=2020&offset=4&limit=3"
+```
+
+- Non-integer or negative paging params (example, HTTP 400):
+
+```bash
+curl -sS "http://localhost:5000/api/forex/daily?day=1&month=1&year=2020&limit=abc"
+curl -sS "http://localhost:5000/api/forex/daily?day=1&month=1&year=2020&offset=-1"
+```
+
+Notes and suggestions:
+
+- There is no enforced maximum `limit` in the current implementation. For production use you may want to cap `limit` (for example 500 or 1000) to avoid large responses or memory spikes.
+- Consider returning a pagination wrapper like `{ "total": N, "offset": X, "limit": Y, "results": [...] }` if clients benefit from metadata. Current response remains a plain JSON array for backward compatibility.
+
 Notes:
 - The exact fields and values depend on the parser and target site's HTML structure. When running the real scraper, values reflect what is parsed from ForexFactory for the given date.
 - The examples above match the app behavior implemented in `main.py` and the test fixtures in `tests/test_app.py`.
