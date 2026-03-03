@@ -8,6 +8,8 @@ from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
+BASE_URL = "https://www.forexfactory.com/calendar"
+
 month_names = {
     1: "Jan",
     2: "Feb",
@@ -41,7 +43,7 @@ month_numbers = {
 
 def getURL(day=1, month=1, year=2020, timeline="day"):
     date_str = f"{month_names.get(month, 'Jan')}{day}.{year}"
-    url = f"https://www.forexfactory.com/calendar?{timeline}={date_str}"
+    url = f"{BASE_URL}?{timeline}={date_str}"
     return url
 
 

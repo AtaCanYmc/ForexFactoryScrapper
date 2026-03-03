@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from flask import Flask
 from flask_cors import CORS
 
-from .forexFactoryScrapper import getRecords, getURL  # noqa: F401
+from src.scrapper.forexFactoryScrapper import getRecords, getURL  # noqa: F401
 
 # Load .env file if present. Use DOTENV_PATH to override if needed.
 dotenv_path = os.getenv("DOTENV_PATH")
@@ -36,6 +36,14 @@ except Exception:
     logger.debug(
         "Route blueprints not available; app will run without registered routes"
     )
+
+# Register middleware (e.g. correlation-id) from src.middleware
+try:
+    from .middleware import register_middleware
+
+    register_middleware(app)
+except Exception:
+    logger.debug("Middleware module not available; skipping middleware registration")
 
 # Register centralized error handlers from routes/error_handlers.py
 try:

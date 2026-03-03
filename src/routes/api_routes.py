@@ -32,7 +32,10 @@ def daily_data():
     # Fallback to importing directly from the scraper module if not available
     if getRecords is None or getURL is None:
         try:
-            from src.forexFactoryScrapper import getRecords as _gr, getURL as _gu
+            from src.scrapper.forexFactoryScrapper import (
+                getRecords as _gr,
+                getURL as _gu,
+            )
 
             getRecords = _gr
             getURL = _gu
