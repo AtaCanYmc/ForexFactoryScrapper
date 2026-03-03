@@ -331,3 +331,78 @@ Notes:
 
 - Behavior and validation match the Forex endpoint: `limit` and `offset` must be integers and non-negative; `limit=0` is valid and returns an empty `results` array.
 - Responses use the pagination wrapper `{ "total": N, "offset": X, "limit": Y, "results": [...] }` for list data.
+
+### 7) MetalsMine daily — examples
+
+The project also exposes a MetalsMine-specific scraping endpoint that follows the same parameter and paging semantics as the Forex and Cryptocraft endpoints.
+
+- Missing parameters (HTTP 400):
+
+```bash
+curl -sS http://localhost:5000/api/metalsmine/daily
+```
+
+Response body:
+
+```json
+{ "error": "Missing one or more required parameters: day, month, year" }
+```
+
+- Invalid (non-integer) parameters (HTTP 400):
+
+```bash
+curl -sS "http://localhost:5000/api/metalsmine/daily?day=aa&month=bb&year=cc"
+```
+
+Response body:
+
+```json
+{ "error": "Parameters day, month and year must be integers" }
+```
+
+- Success (pagination wrapper):
+
+Curl example:
+
+```bash
+curl -sS "http://localhost:5000/api/metalsmine/daily?day=1&month=1&year=2020"
+```
+
+Expected JSON response (HTTP 200): a pagination wrapper containing metadata and a list of records. Example response format:
+
+```json
+{
+  "total": 1,
+  "offset": 0,
+  "limit": null,
+  "results": [
+    {
+      "Time": "01/01/2020 00:00",
+      "Currency": "XAU",
+      "Event": "Gold Inventory Release",
+      "Forecast": "n/a",
+      "Actual": "n/a",
+      "Previous": "n/a"
+    }
+  ]
+}
+```
+
+- Paging examples (limit & offset):
+
+First 10 records:
+
+```bash
+curl -sS "http://localhost:5000/api/metalsmine/daily?day=1&month=1&year=2020&limit=10"
+```
+
+Start from the 5th record and return up to 3 records:
+
+```bash
+curl -sS "http://localhost:5000/api/metalsmine/daily?day=1&month=1&year=2020&offset=4&limit=3"
+```
+
+Notes:
+
+- Behavior and validation match the Forex and Cryptocraft endpoints: `limit` and `offset` must be integers and non-negative; `limit=0` is valid and returns an empty `results` array.
+- Responses use the pagination wrapper `{ "total": N, "offset": X, "limit": Y, "results": [...] }` for list data.
