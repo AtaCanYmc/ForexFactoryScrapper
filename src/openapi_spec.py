@@ -244,6 +244,81 @@ OPENAPI_SPEC = {
                 },
             }
         },
+        "/api/energyexch/daily": {
+            "get": {
+                "summary": "Get EnergyExch events for a day",
+                "parameters": [
+                    {
+                        "name": "day",
+                        "in": "query",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                        "description": "Day of month",
+                    },
+                    {
+                        "name": "month",
+                        "in": "query",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                        "description": "Month (1-12)",
+                    },
+                    {
+                        "name": "year",
+                        "in": "query",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                        "description": "Year (e.g. 2020)",
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": False,
+                        "schema": {"type": "integer", "minimum": 0},
+                        "description": "Max number of results to return",
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "required": False,
+                        "schema": {"type": "integer", "minimum": 0},
+                        "description": "Number of records to skip",
+                    },
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A pagination wrapper with energyexch records",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedRecords"
+                                },
+                                "examples": {
+                                    "example": {
+                                        "summary": "EnergyExch sample response",
+                                        "value": {
+                                            "total": 1,
+                                            "offset": 0,
+                                            "limit": None,
+                                            "results": [
+                                                {
+                                                    "Time": "01/01/2020 00:00",
+                                                    "Currency": "USD",
+                                                    "Event": "Energy Report",
+                                                    "Forecast": "n/a",
+                                                    "Actual": "n/a",
+                                                    "Previous": "n/a",
+                                                }
+                                            ],
+                                        },
+                                    }
+                                },
+                            }
+                        },
+                    },
+                    "400": {"description": "Bad Request - invalid params"},
+                },
+            }
+        },
     },
     "components": {
         "schemas": {

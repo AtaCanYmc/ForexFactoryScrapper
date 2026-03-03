@@ -201,62 +201,6 @@ curl -sS "http://localhost:5000/api/forex/daily?day=1&month=1&year=2020&limit=ab
 curl -sS "http://localhost:5000/api/forex/daily?day=1&month=1&year=2020&offset=-1"
 ```
 
-Notes and suggestions:
-
-- There is no enforced maximum `limit` in the current implementation. For production use you may want to cap `limit` (for example 500 or 1000) to avoid large responses or memory spikes.
-- Consider returning a pagination wrapper like `{ "total": N, "offset": X, "limit": Y, "results": [...] }` if clients benefit from metadata. Current response remains a plain JSON array for backward compatibility.
-
-Notes:
-- The exact fields and values depend on the parser and target site's HTML structure. When running the real scraper, values reflect what is parsed from ForexFactory for the given date.
-- The examples above match the app behavior implemented in `main.py` and the test fixtures in `tests/test_app.py`.
-
-## API docs (OpenAPI / Swagger UI)
-
-This project exposes a tiny OpenAPI JSON and a Swagger UI page to help explore the endpoints:
-
-- GET /openapi.json — returns a minimal OpenAPI 3 JSON describing the API (used by the UI).
-- GET /swagger — serves a lightweight Swagger UI that loads `/openapi.json` (served from a CDN; no new Python dependencies required).
-
-Examples:
-
-- Fetch the spec directly:
-
-```bash
-curl -sS http://localhost:5000/openapi.json | jq .
-```
-
-- Open the interactive docs in your browser:
-
-Visit: http://localhost:5000/swagger
-
-Notes:
-- The Swagger UI is loaded from a CDN (unpkg). If you need an offline or self-hosted UI, consider adding `swagger-ui` as a static asset or installing a Python package like `flasgger`.
-- The OpenAPI spec is intentionally minimal and kept in `src/app.py` as `OPENAPI_SPEC`. You can expand it with schemas and richer response descriptions if you need stronger client generation.
-
-## Tests
-
-Run the test suite with pytest:
-
-```bash
-pytest -q
-```
-
-Unit tests are located in the `tests/` folder. Network calls and external dependencies are isolated using monkeypatching to keep tests deterministic.
-
-## Notes and caveats
-
-- The scraper depends on the target site's HTML structure. If ForexFactory changes its markup, the parsing code will need updating.
-- `requirements.txt` pins versions that were used during development; consider updating or pinning further for deployments.
-- Respect the target site's robots.txt and terms of service when scraping.
-
-## Contributing
-
-Contributions, bug reports, and feature requests are welcome. Please open an issue or a pull request.
-
-## License
-
-This project is licensed under the MIT License — see the [LICENSE](./LICENSE) file for details.
-
 ### 6) Cryptocraft daily — examples
 
 The project also exposes a Cryptocraft-specific scraping endpoint that follows the same parameter and paging semantics as the Forex endpoint.
@@ -402,7 +346,133 @@ Start from the 5th record and return up to 3 records:
 curl -sS "http://localhost:5000/api/metalsmine/daily?day=1&month=1&year=2020&offset=4&limit=3"
 ```
 
+### 8) EnergyExch daily — examples
+
+The project also exposes an EnergyExch-specific scraping endpoint that follows the same parameter and paging semantics as the Forex, Cryptocraft, and MetalsMine endpoints.
+
+- Missing parameters (HTTP 400):
+
+```bash
+curl -sS http://localhost:5000/api/energyexch/daily
+```
+
+Response body:
+
+```json
+{ "error": "Missing one or more required parameters: day, month, year" }
+```
+
+- Invalid (non-integer) parameters (HTTP 400):
+
+```bash
+curl -sS "http://localhost:5000/api/energyexch/daily?day=aa&month=bb&year=cc"
+```
+
+Response body:
+
+```json
+{ "error": "Parameters day, month and year must be integers" }
+```
+
+- Success (pagination wrapper):
+
+Curl example:
+
+```bash
+curl -sS "http://localhost:5000/api/energyexch/daily?day=1&month=1&year=2020"
+```
+
+Expected JSON response (HTTP 200): a pagination wrapper containing metadata and a list of records. Example response format:
+
+```json
+{
+  "total": 1,
+  "offset": 0,
+  "limit": null,
+  "results": [
+    {
+      "Time": "01/01/2020 00:00",
+      "Currency": "USD",
+      "Event": "Energy Report",
+      "Forecast": "n/a",
+      "Actual": "n/a",
+      "Previous": "n/a"
+    }
+  ]
+}
+```
+
+- Paging examples (limit & offset):
+
+First 10 records:
+
+```bash
+curl -sS "http://localhost:5000/api/energyexch/daily?day=1&month=1&year=2020&limit=10"
+```
+
+Start from the 5th record and return up to 3 records:
+
+```bash
+curl -sS "http://localhost:5000/api/energyexch/daily?day=1&month=1&year=2020&offset=4&limit=3"
+```
+
 Notes:
 
-- Behavior and validation match the Forex and Cryptocraft endpoints: `limit` and `offset` must be integers and non-negative; `limit=0` is valid and returns an empty `results` array.
+- Behavior and validation match the Forex endpoint: `limit` and `offset` must be integers and non-negative; `limit=0` is valid and returns an empty `results` array.
 - Responses use the pagination wrapper `{ "total": N, "offset": X, "limit": Y, "results": [...] }` for list data.
+
+Notes and suggestions:
+
+- There is no enforced maximum `limit` in the current implementation. For production use you may want to cap `limit` (for example 500 or 1000) to avoid large responses or memory spikes.
+- Consider returning a pagination wrapper like `{ "total": N, "offset": X, "limit": Y, "results": [...] }` if clients benefit from metadata. Current response remains a plain JSON array for backward compatibility.
+
+Notes:
+- The exact fields and values depend on the parser and target site's HTML structure. When running the real scraper, values reflect what is parsed from ForexFactory for the given date.
+- The examples above match the app behavior implemented in `main.py` and the test fixtures in `tests/test_app.py`.
+
+## API docs (OpenAPI / Swagger UI)
+
+This project exposes a tiny OpenAPI JSON and a Swagger UI page to help explore the endpoints:
+
+- GET /openapi.json — returns a minimal OpenAPI 3 JSON describing the API (used by the UI).
+- GET /swagger — serves a lightweight Swagger UI that loads `/openapi.json` (served from a CDN; no new Python dependencies required).
+
+Examples:
+
+- Fetch the spec directly:
+
+```bash
+curl -sS http://localhost:5000/openapi.json | jq .
+```
+
+- Open the interactive docs in your browser:
+
+Visit: http://localhost:5000/swagger
+
+Notes:
+- The Swagger UI is loaded from a CDN (unpkg). If you need an offline or self-hosted UI, consider adding `swagger-ui` as a static asset or installing a Python package like `flasgger`.
+- The OpenAPI spec is intentionally minimal and kept in `src/app.py` as `OPENAPI_SPEC`. You can expand it with schemas and richer response descriptions if you need stronger client generation.
+
+## Tests
+
+Run the test suite with pytest:
+
+```bash
+pytest -q
+```
+
+Unit tests are located in the `tests/` folder. Network calls and external dependencies are isolated using monkeypatching to keep tests deterministic.
+
+## Notes and caveats
+
+- The scraper depends on the target site's HTML structure. If ForexFactory changes its markup, the parsing code will need updating.
+- `requirements.txt` pins versions that were used during development; consider updating or pinning further for deployments.
+- Respect the target site's robots.txt and terms of service when scraping.
+
+## Contributing
+
+Contributions, bug reports, and feature requests are welcome. Please open an issue or a pull request.
+
+## License
+
+This project is licensed under the MIT License — see the [LICENSE](./LICENSE) file for details.
