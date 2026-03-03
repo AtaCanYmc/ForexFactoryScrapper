@@ -12,7 +12,7 @@
 <script>
     window.onload = function() {
       const ui = SwaggerUIBundle({
-        url: "%s",
+        url: "{{ openapi_url }}",
         dom_id: '#swagger',
         presets: [SwaggerUIBundle.presets.apis],
       });

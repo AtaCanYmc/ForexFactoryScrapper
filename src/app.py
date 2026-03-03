@@ -14,7 +14,9 @@ if dotenv_path:
 else:
     load_dotenv()  # will search for a .env file in cwd or parent directories
 
-app = Flask(__name__)
+# Ensure Flask uses the package's templates directory
+TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
+app = Flask(__name__, template_folder=TEMPLATES_DIR)
 CORS(app)
 
 # Configure basic logging

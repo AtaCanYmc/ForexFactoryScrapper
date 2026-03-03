@@ -4,7 +4,7 @@ OPENAPI_SPEC = {
     "info": {
         "title": "ForexFactoryScrapper API",
         "version": "1.0.0",
-        "description": "Minimal OpenAPI spec for the small scraping API",
+        "description": "OpenAPI spec with schemas for the scraping API",
     },
     "paths": {
         "/api/hello": {
@@ -65,34 +65,28 @@ OPENAPI_SPEC = {
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "total": {
-                                            "type": "integer",
-                                            "description": "Total number of available records",
-                                        },
-                                        "offset": {
-                                            "type": "integer",
-                                            "description": "Offset applied",
-                                        },
-                                        "limit": {
-                                            "oneOf": [
-                                                {"type": "integer"},
-                                                {"type": "null"},
+                                    "$ref": "#/components/schemas/PaginatedRecords"
+                                },
+                                "examples": {
+                                    "example": {
+                                        "summary": "Sample response",
+                                        "value": {
+                                            "total": 1,
+                                            "offset": 0,
+                                            "limit": None,
+                                            "results": [
+                                                {
+                                                    "Time": "01/01/2020 00:00",
+                                                    "Currency": "USD",
+                                                    "Event": "NFP",
+                                                    "Forecast": "100k",
+                                                    "Actual": "120k",
+                                                    "Previous": "90k",
+                                                }
                                             ],
-                                            "description": "Limit applied (null means unlimited)",
                                         },
-                                        "results": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "additionalProperties": True,
-                                                "description": "A single parsed record (fields depend on scraper)",
-                                            },
-                                        },
-                                    },
-                                    "required": ["total", "offset", "limit", "results"],
-                                }
+                                    }
+                                },
                             }
                         },
                     },
@@ -100,5 +94,52 @@ OPENAPI_SPEC = {
                 },
             }
         },
+    },
+    "components": {
+        "schemas": {
+            "Record": {
+                "type": "object",
+                "properties": {
+                    "Time": {
+                        "type": "string",
+                        "description": "Localized timestamp or formatted time",
+                    },
+                    "Currency": {"type": "string", "description": "Currency code"},
+                    "Event": {"type": "string", "description": "Event name"},
+                    "Forecast": {
+                        "type": "string",
+                        "description": "Forecast value (raw string)",
+                    },
+                    "Actual": {
+                        "type": "string",
+                        "description": "Actual value (raw string)",
+                    },
+                    "Previous": {
+                        "type": "string",
+                        "description": "Previous value (raw string)",
+                    },
+                },
+                "additionalProperties": True,
+            },
+            "PaginatedRecords": {
+                "type": "object",
+                "properties": {
+                    "total": {
+                        "type": "integer",
+                        "description": "Total number of available records",
+                    },
+                    "offset": {"type": "integer", "description": "Offset applied"},
+                    "limit": {
+                        "oneOf": [{"type": "integer"}, {"type": "null"}],
+                        "description": "Limit applied (null means unlimited)",
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {"$ref": "#/components/schemas/Record"},
+                    },
+                },
+                "required": ["total", "offset", "limit", "results"],
+            },
+        }
     },
 }
