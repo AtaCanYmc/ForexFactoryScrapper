@@ -86,8 +86,12 @@ def test_forex_success(monkeypatch):
     resp = client.get("/api/forex/daily?day=1&month=1&year=2020")
     assert resp.status_code == 200
     data = resp.get_json()
-    assert isinstance(data, list)
-    assert data == SAMPLE_RECORDS
+    # New response wrapper: expect metadata + results
+    assert isinstance(data, dict)
+    assert data["total"] == len(SAMPLE_RECORDS)
+    assert data["offset"] == 0
+    assert data["limit"] is None
+    assert data["results"] == SAMPLE_RECORDS
 
 
 # Paging tests
@@ -107,9 +111,11 @@ def test_forex_paging_limit(monkeypatch):
     resp = client.get("/api/forex/daily?day=1&month=1&year=2020&limit=2")
     assert resp.status_code == 200
     data = resp.get_json()
-    assert isinstance(data, list)
-    assert len(data) == 2
-    assert data == SAMPLE_RECORDS_MULTI[:2]
+    assert isinstance(data, dict)
+    assert data["total"] == len(SAMPLE_RECORDS_MULTI)
+    assert data["offset"] == 0
+    assert data["limit"] == 2
+    assert data["results"] == SAMPLE_RECORDS_MULTI[:2]
 
 
 def test_forex_paging_offset(monkeypatch):
@@ -126,8 +132,11 @@ def test_forex_paging_offset(monkeypatch):
     resp = client.get("/api/forex/daily?day=1&month=1&year=2020&offset=2")
     assert resp.status_code == 200
     data = resp.get_json()
-    assert isinstance(data, list)
-    assert data == SAMPLE_RECORDS_MULTI[2:]
+    assert isinstance(data, dict)
+    assert data["total"] == len(SAMPLE_RECORDS_MULTI)
+    assert data["offset"] == 2
+    assert data["limit"] is None
+    assert data["results"] == SAMPLE_RECORDS_MULTI[2:]
 
 
 def test_forex_paging_limit_offset(monkeypatch):
@@ -144,8 +153,11 @@ def test_forex_paging_limit_offset(monkeypatch):
     resp = client.get("/api/forex/daily?day=1&month=1&year=2020&offset=1&limit=2")
     assert resp.status_code == 200
     data = resp.get_json()
-    assert isinstance(data, list)
-    assert data == SAMPLE_RECORDS_MULTI[1:3]
+    assert isinstance(data, dict)
+    assert data["total"] == len(SAMPLE_RECORDS_MULTI)
+    assert data["offset"] == 1
+    assert data["limit"] == 2
+    assert data["results"] == SAMPLE_RECORDS_MULTI[1:3]
 
 
 def test_forex_paging_invalid_params(monkeypatch):

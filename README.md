@@ -130,20 +130,27 @@ Curl (example):
 curl -sS "http://localhost:5000/api/forex/daily?day=1&month=1&year=2020"
 ```
 
-Expected JSON response (HTTP 200): a JSON array of records. Example record format:
+Expected JSON response (HTTP 200): a pagination wrapper containing metadata and a list of records. Example response format:
 
 ```json
-[
-  {
-    "Time": "01/01/2020 00:00",
-    "Currency": "USD",
-    "Event": "NFP",
-    "Forecast": "100k",
-    "Actual": "120k",
-    "Previous": "90k"
-  }
-]
+{
+  "total": 1,
+  "offset": 0,
+  "limit": null,
+  "results": [
+    {
+      "Time": "01/01/2020 00:00",
+      "Currency": "USD",
+      "Event": "NFP",
+      "Forecast": "100k",
+      "Actual": "120k",
+      "Previous": "90k"
+    }
+  ]
+}
 ```
+
+> Note: The `total`, `offset`, and `limit` fields in the response wrapper provide pagination metadata. The `results` field contains the list of records.
 
 Python `requests` example:
 
@@ -202,6 +209,29 @@ Notes and suggestions:
 Notes:
 - The exact fields and values depend on the parser and target site's HTML structure. When running the real scraper, values reflect what is parsed from ForexFactory for the given date.
 - The examples above match the app behavior implemented in `main.py` and the test fixtures in `tests/test_app.py`.
+
+## API docs (OpenAPI / Swagger UI)
+
+This project exposes a tiny OpenAPI JSON and a Swagger UI page to help explore the endpoints:
+
+- GET /openapi.json — returns a minimal OpenAPI 3 JSON describing the API (used by the UI).
+- GET /swagger — serves a lightweight Swagger UI that loads `/openapi.json` (served from a CDN; no new Python dependencies required).
+
+Examples:
+
+- Fetch the spec directly:
+
+```bash
+curl -sS http://localhost:5000/openapi.json | jq .
+```
+
+- Open the interactive docs in your browser:
+
+Visit: http://localhost:5000/swagger
+
+Notes:
+- The Swagger UI is loaded from a CDN (unpkg). If you need an offline or self-hosted UI, consider adding `swagger-ui` as a static asset or installing a Python package like `flasgger`.
+- The OpenAPI spec is intentionally minimal and kept in `src/app.py` as `OPENAPI_SPEC`. You can expand it with schemas and richer response descriptions if you need stronger client generation.
 
 ## Tests
 
