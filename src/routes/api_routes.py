@@ -94,15 +94,12 @@ def daily_data():
     try:
         url = getURL(day_i, month_i, year_i, "day")
         record_json = getRecords(url)
-    except Exception as e:
+    except Exception:
         logger.exception("Failed to fetch or parse records")
-        return (
-            jsonify({"error": "Failed to fetch records", "detail": str(e)}),
-            502,
-        )
+        # Let centralized error handlers handle this (return 500) instead of returning 502 here
+        raise
 
-    # If records is a list apply paging (offset/limit);
-    # otherwise return as-is
+    # If records is a list apply paging (offset/limit); otherwise return as-is
     try:
         if isinstance(record_json, list):
             total = len(record_json)

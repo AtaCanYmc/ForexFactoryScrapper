@@ -37,6 +37,14 @@ except Exception:
         "Route blueprints not available; app will run without registered routes"
     )
 
+# Register centralized error handlers from routes/error_handlers.py
+try:
+    from .routes.error_handlers import register_error_handlers
+
+    register_error_handlers(app)
+except Exception:
+    logger.debug("Error handlers module not available; using default Flask handlers")
+
 
 def run_app():
     """Start the Flask app using environment configuration (HOST/PORT/DEBUG).
