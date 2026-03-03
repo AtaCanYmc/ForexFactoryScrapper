@@ -5,7 +5,11 @@ from dotenv import load_dotenv
 from flask import Flask
 from flask_cors import CORS
 
-from src.scrapper.forexFactoryScrapper import getRecords, getURL  # noqa: F401
+# Do not import a default scrapper here — importing forex scrapper at module import time
+# caused all endpoints to use the forex implementation. Leave getRecords/getURL as
+# None so routes can fall back to their site-specific scrapers.
+getRecords = None
+getURL = None
 
 # Load .env file if present. Use DOTENV_PATH to override if needed.
 dotenv_path = os.getenv("DOTENV_PATH")

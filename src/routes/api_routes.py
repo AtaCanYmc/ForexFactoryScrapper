@@ -29,19 +29,27 @@ def daily_data():
         getRecords = None
         getURL = None
 
-    # Fallback to importing directly from the scraper module if not available
-    if getRecords is None or getURL is None:
-        try:
-            from src.scrapper.forexFactoryScrapper import (
-                getRecords as _gr,
-                getURL as _gu,
-            )
+    # Also allow top-level `main` module to provide overrides (tests monkeypatch `main`)
+    try:
+        import importlib
 
-            getRecords = _gr
-            getURL = _gu
-        except Exception:
-            logger.exception("Failed to import scraper helpers")
-            return jsonify({"error": "Server configuration error"}), 500
+        main_mod = importlib.import_module("main")
+        main_getRecords = getattr(main_mod, "getRecords", None)
+        main_getURL = getattr(main_mod, "getURL", None)
+        if main_getRecords is not None:
+            getRecords = main_getRecords
+        if main_getURL is not None:
+            getURL = main_getURL
+    except Exception:
+        # ignore if main not available
+        pass
+
+    # Resolve helper functions (src.app, main overrides, fallback to site-specific)
+    try:
+        getRecords, getURL = _resolve_helpers("src.scrapper.forexFactoryScrapper")
+    except Exception:
+        logger.exception("Failed to resolve scraper helpers")
+        return jsonify({"error": "Server configuration error"}), 500
 
     # validate presence
     day = request.args.get("day")
@@ -149,8 +157,22 @@ def cryptocraft_daily():
         getRecords = None
         getURL = None
 
+    # Also allow top-level `main` module to provide overrides (tests monkeypatch `main`)
+    try:
+        import importlib
+
+        main_mod = importlib.import_module("main")
+        main_getRecords = getattr(main_mod, "getRecords", None)
+        main_getURL = getattr(main_mod, "getURL", None)
+        if main_getRecords is not None:
+            getRecords = main_getRecords
+        if main_getURL is not None:
+            getURL = main_getURL
+    except Exception:
+        pass
+
     # Fallback to importing directly from the cryptocraft scrapper
-    if getRecords is None or getURL is None:
+    if getRecords is None:
         try:
             from src.scrapper.cryptoCraftScrapper import (
                 getRecords as _gr,
@@ -162,6 +184,15 @@ def cryptocraft_daily():
         except Exception:
             logger.exception("Failed to import cryptocraft scraper helpers")
             return jsonify({"error": "Server configuration error"}), 500
+    else:
+        if getURL is None:
+            try:
+                from src.scrapper.cryptoCraftScrapper import getURL as _gu
+
+                getURL = _gu
+            except Exception:
+                logger.exception("Failed to import cryptocraft getURL")
+                return jsonify({"error": "Server configuration error"}), 500
 
     # validate presence
     day = request.args.get("day")
@@ -266,8 +297,22 @@ def metalsmine_daily():
         getRecords = None
         getURL = None
 
+    # Also allow top-level `main` module to provide overrides (tests monkeypatch `main`)
+    try:
+        import importlib
+
+        main_mod = importlib.import_module("main")
+        main_getRecords = getattr(main_mod, "getRecords", None)
+        main_getURL = getattr(main_mod, "getURL", None)
+        if main_getRecords is not None:
+            getRecords = main_getRecords
+        if main_getURL is not None:
+            getURL = main_getURL
+    except Exception:
+        pass
+
     # Fallback to importing directly from the metalsmine scrapper
-    if getRecords is None or getURL is None:
+    if getRecords is None:
         try:
             from src.scrapper.metalsMineScrapper import (
                 getRecords as _gr,
@@ -279,6 +324,15 @@ def metalsmine_daily():
         except Exception:
             logger.exception("Failed to import metalsmine scraper helpers")
             return jsonify({"error": "Server configuration error"}), 500
+    else:
+        if getURL is None:
+            try:
+                from src.scrapper.metalsMineScrapper import getURL as _gu
+
+                getURL = _gu
+            except Exception:
+                logger.exception("Failed to import metalsmine getURL")
+                return jsonify({"error": "Server configuration error"}), 500
 
     # validate presence
     day = request.args.get("day")
@@ -380,8 +434,22 @@ def energyexch_daily():
         getRecords = None
         getURL = None
 
+    # Also allow top-level `main` module to provide overrides (tests monkeypatch `main`)
+    try:
+        import importlib
+
+        main_mod = importlib.import_module("main")
+        main_getRecords = getattr(main_mod, "getRecords", None)
+        main_getURL = getattr(main_mod, "getURL", None)
+        if main_getRecords is not None:
+            getRecords = main_getRecords
+        if main_getURL is not None:
+            getURL = main_getURL
+    except Exception:
+        pass
+
     # Fallback to importing directly from the energyexch scrapper
-    if getRecords is None or getURL is None:
+    if getRecords is None:
         try:
             from src.scrapper.energyExchScrapper import (
                 getRecords as _gr,
@@ -393,6 +461,15 @@ def energyexch_daily():
         except Exception:
             logger.exception("Failed to import energyexch scraper helpers")
             return jsonify({"error": "Server configuration error"}), 500
+    else:
+        if getURL is None:
+            try:
+                from src.scrapper.energyExchScrapper import getURL as _gu
+
+                getURL = _gu
+            except Exception:
+                logger.exception("Failed to import energyexch getURL")
+                return jsonify({"error": "Server configuration error"}), 500
 
     # validate presence
     day = request.args.get("day")
@@ -479,3 +556,48 @@ def energyexch_daily():
     except Exception:
         logger.exception("Failed to apply paging to energyexch records")
         return jsonify({"error": "Failed to process records"}), 500
+
+
+def _resolve_helpers(site_module_path):
+    """Return (getRecords, getURL) functions resolved in this order:
+    1) src.app module attributes (if callable)
+    2) top-level main module attributes (if callable) -- tests may patch this
+    3) site-specific scraper module (imported dynamically)
+
+    Raises ImportError if site module cannot be imported when needed.
+    """
+    getRecords_fn = None
+    getURL_fn = None
+
+    # 1) src.app
+    try:
+        import src.app as src_app
+
+        if callable(getattr(src_app, "getRecords", None)):
+            getRecords_fn = getattr(src_app, "getRecords")
+        if callable(getattr(src_app, "getURL", None)):
+            getURL_fn = getattr(src_app, "getURL")
+    except Exception:
+        pass
+
+    # 2) main module (tests sometimes monkeypatch main)
+    try:
+        import importlib
+
+        main_mod = importlib.import_module("main")
+        if getRecords_fn is None and callable(getattr(main_mod, "getRecords", None)):
+            getRecords_fn = getattr(main_mod, "getRecords")
+        if getURL_fn is None and callable(getattr(main_mod, "getURL", None)):
+            getURL_fn = getattr(main_mod, "getURL")
+    except Exception:
+        pass
+
+    # 3) fallback to site-specific scraper for missing functions
+    if getRecords_fn is None or getURL_fn is None:
+        module = __import__(site_module_path, fromlist=["*"])
+        if getRecords_fn is None and hasattr(module, "getRecords"):
+            getRecords_fn = getattr(module, "getRecords")
+        if getURL_fn is None and hasattr(module, "getURL"):
+            getURL_fn = getattr(module, "getURL")
+
+    return getRecords_fn, getURL_fn
