@@ -253,11 +253,32 @@ def cryptocraft_daily():
         logger.exception("Failed to fetch or parse cryptocraft records")
         raise
 
-    # Apply paging if list
+    # Normalize cryptocraft records to requested shape: Impact, Event, Actual, Forecast, Previous, Time
     try:
+        if isinstance(record_json, list):
+            normalized = []
+            for r in record_json:
+                # Impact must reflect severity (low/medium/high). Do not map Currency into Impact.
+                impact = (
+                    r.get("Impact") if isinstance(r, dict) and "Impact" in r else None
+                )
+                normalized.append(
+                    {
+                        "Impact": impact if impact is not None else "",
+                        "Event": r.get("Event") if isinstance(r, dict) else None,
+                        "Actual": r.get("Actual") if isinstance(r, dict) else None,
+                        "Forecast": r.get("Forecast") if isinstance(r, dict) else None,
+                        "Previous": r.get("Previous") if isinstance(r, dict) else None,
+                        "Time": r.get("Time") if isinstance(r, dict) else None,
+                    }
+                )
+            record_json = normalized
+
+        # If records is a list apply paging (offset/limit); otherwise return as-is
         if isinstance(record_json, list):
             total = len(record_json)
 
+            # apply offset
             if offset and offset > 0:
                 if offset >= total:
                     paged = []
@@ -266,9 +287,11 @@ def cryptocraft_daily():
             else:
                 paged = record_json[:]
 
+            # apply limit
             if limit is not None:
                 paged = paged[:limit]
 
+            # Wrap results with pagination metadata
             response_body = {
                 "total": total,
                 "offset": offset,
@@ -280,7 +303,7 @@ def cryptocraft_daily():
         else:
             return jsonify(record_json), 200
     except Exception:
-        logger.exception("Failed to apply paging to cryptocraft records")
+        logger.exception("Failed to apply paging to records")
         return jsonify({"error": "Failed to process records"}), 500
 
 

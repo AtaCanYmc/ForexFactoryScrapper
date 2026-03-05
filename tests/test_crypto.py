@@ -15,7 +15,7 @@ app = main.app
 
 SAMPLE_RECORD = {
     "Time": "01/01/2020 00:00",
-    "Currency": "BTC",
+    "Impact": "BTC",
     "Event": "Protocol Upgrade",
     "Forecast": "n/a",
     "Actual": "n/a",
@@ -23,7 +23,7 @@ SAMPLE_RECORD = {
 }
 
 SAMPLE_RECORDS_MULTI = [
-    {**SAMPLE_RECORD, "Time": f"01/01/2020 00:0{i}", "Currency": f"BTC{i}"}
+    {**SAMPLE_RECORD, "Time": f"01/01/2020 00:0{i}", "Impact": f"BTC{i}"}
     for i in range(5)
 ]
 

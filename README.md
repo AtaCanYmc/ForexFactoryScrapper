@@ -247,7 +247,7 @@ Expected JSON response (HTTP 200): a pagination wrapper containing metadata and 
   "results": [
     {
       "Time": "01/01/2020 00:00",
-      "Currency": "BTC",
+      "Impact": "high",
       "Event": "Protocol Upgrade",
       "Forecast": "n/a",
       "Actual": "n/a",
@@ -256,6 +256,10 @@ Expected JSON response (HTTP 200): a pagination wrapper containing metadata and 
   ]
 }
 ```
+
+Note on `Impact` field:
+
+- For the `cryptocraft` endpoint there is no `Currency` field in results. Instead each record contains an `Impact` field describing the expected market impact of the event. Typical values are `low`, `medium`, or `high` (strings). Consumers should rely on `Impact` to assess severity rather than a currency code.
 
 - Paging examples (limit & offset):
 

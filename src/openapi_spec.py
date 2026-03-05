@@ -140,7 +140,7 @@ OPENAPI_SPEC = {
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PaginatedRecords"
+                                    "$ref": "#/components/schemas/PaginatedCryptoRecords"
                                 },
                                 "examples": {
                                     "example": {
@@ -152,7 +152,7 @@ OPENAPI_SPEC = {
                                             "results": [
                                                 {
                                                     "Time": "01/01/2020 00:00",
-                                                    "Currency": "BTC",
+                                                    "Impact": "high",
                                                     "Event": "Protocol Upgrade",
                                                     "Forecast": "n/a",
                                                     "Actual": "n/a",
@@ -346,6 +346,33 @@ OPENAPI_SPEC = {
                 },
                 "additionalProperties": True,
             },
+            "CryptoRecord": {
+                "type": "object",
+                "properties": {
+                    "Time": {
+                        "type": "string",
+                        "description": "Localized timestamp or formatted time",
+                    },
+                    "Impact": {
+                        "type": "string",
+                        "description": "Impact level (e.g. low, medium, high)",
+                    },
+                    "Event": {"type": "string", "description": "Event name"},
+                    "Forecast": {
+                        "type": "string",
+                        "description": "Forecast value (raw string)",
+                    },
+                    "Actual": {
+                        "type": "string",
+                        "description": "Actual value (raw string)",
+                    },
+                    "Previous": {
+                        "type": "string",
+                        "description": "Previous value (raw string)",
+                    },
+                },
+                "additionalProperties": True,
+            },
             "PaginatedRecords": {
                 "type": "object",
                 "properties": {
@@ -361,6 +388,25 @@ OPENAPI_SPEC = {
                     "results": {
                         "type": "array",
                         "items": {"$ref": "#/components/schemas/Record"},
+                    },
+                },
+                "required": ["total", "offset", "limit", "results"],
+            },
+            "PaginatedCryptoRecords": {
+                "type": "object",
+                "properties": {
+                    "total": {
+                        "type": "integer",
+                        "description": "Total number of available records",
+                    },
+                    "offset": {"type": "integer", "description": "Offset applied"},
+                    "limit": {
+                        "oneOf": [{"type": "integer"}, {"type": "null"}],
+                        "description": "Limit applied (null means unlimited)",
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {"$ref": "#/components/schemas/CryptoRecord"},
                     },
                 },
                 "required": ["total", "offset", "limit", "results"],

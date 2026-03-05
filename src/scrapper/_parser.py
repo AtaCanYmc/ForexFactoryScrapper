@@ -63,14 +63,11 @@ def _extract_start_date(start_row, url, table):
     startDate = start_row.find_next("span", class_="date")
     if not startDate:
         startDate = start_row.find("span")
+    # If still not found on the start_row, try anywhere in the table (some markup places date differently)
     if not startDate:
-        row_text = start_row.get_text(separator=" ") if start_row else ""
-
-        class _D:
-            def __init__(self, t):
-                self.text = t
-
-        startDate = _D(row_text)
+        start_span = table.select_one("span.date, .date")
+        if start_span:
+            startDate = start_span
 
     if not startDate or not getattr(startDate, "text", None):
         logger.error("Start date text not found")
@@ -266,6 +263,58 @@ def _parse_row_to_record(row, indices, base_day, base_month, base_year, dt):
             return cells[i].get_text(strip=True) or ""
         return ""
 
+    def _extract_event_name_from_cell_by_index(i):
+        # helper to extract event text from a cell index using robust selectors
+        if not (0 <= i < len(cells)):
+            return None
+        cell = cells[i]
+        # prefer explicit event title elements commonly used on sites
+        selectors = [
+            ".calendar__event-title",
+            ".event-title",
+            ".calendar__event",
+            ".title",
+        ]
+        for sel in selectors:
+            el = cell.select_one(sel)
+            if el:
+                txt = el.get_text(strip=True)
+                if txt:
+                    return txt
+        # fallback to anchor text inside cell
+        a = cell.find("a")
+        if a:
+            txt = a.get_text(strip=True)
+            if txt:
+                return txt
+        # last resort: the whole cell text
+        txt = cell.get_text(strip=True) or None
+        return txt
+
+    def _find_event_in_row():
+        # Search the entire row first for common event title selectors
+        selectors = [
+            ".calendar__event-title",
+            ".event-title",
+            ".calendar__event",
+            ".title",
+            "[data-event-title]",
+        ]
+        for sel in selectors:
+            el = row.select_one(sel)
+            if el:
+                txt = el.get_text(strip=True)
+                if txt:
+                    return txt
+
+        # Look for anchors with meaningful text in the row
+        for a in row.find_all("a"):
+            txt = a.get_text(strip=True)
+            if txt and not re.match(r"^[0-9:\s-]+$", txt):
+                return txt
+
+        return None
+
     # Currency
     curr = ""
     cur_idx = indices.get("currency")
@@ -279,11 +328,16 @@ def _parse_row_to_record(row, indices, base_day, base_month, base_year, dt):
         return None, local_dt
 
     # Event
-    ev_idx = indices.get("event")
-    if ev_idx is not None:
-        name = cell_text(ev_idx) or "unknown"
-    else:
-        name = cell_text(time_idx + 2) or "unknown"
+    # Prefer finding event inside the whole row (robust to column layout changes)
+    name = _find_event_in_row()
+    if not name:
+        ev_idx = indices.get("event")
+        if ev_idx is not None:
+            name = _extract_event_name_from_cell_by_index(ev_idx)
+        if not name:
+            name = _extract_event_name_from_cell_by_index(time_idx + 2)
+    if not name:
+        name = "unknown"
 
     def clean_or_unknown(s):
         s2 = (s or "").replace("\n", "").replace(" ", "")
