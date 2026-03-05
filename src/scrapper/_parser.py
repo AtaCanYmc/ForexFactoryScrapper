@@ -54,29 +54,12 @@ def _find_start_row(table):
     return start_row
 
 
-# Helper: normalize cell values in one place
-def _normalize_cell_value(s, collapse_whitespace=True):
-    """Normalize a raw cell string: strip and optionally collapse internal whitespace.
-
-    Args:
-        s: input string or None
-        collapse_whitespace: if True, replace runs of whitespace with a single space
-    Returns:
-        normalized string ('' for None or empty)
-    """
-    if s is None:
+# Helper: safely get text from a cell
+def _safe_cell_text(cell):
+    """Safely extract text from a cell, returning '' if cell is None or has no text."""
+    if cell is None:
         return ""
-    out = str(s).strip()
-    if collapse_whitespace:
-        out = re.sub(r"\s+", " ", out)
-    return out
-
-
-# Helper: safely get text from a cells list by index
-def _safe_cell_text(cells, i):
-    if 0 <= i < len(cells):
-        return cells[i].get_text(" ", strip=True) or ""
-    return ""
+    return cell.get_text(strip=True) or ""
 
 
 # Helper: find a date node either on the provided row or in the table
@@ -173,80 +156,38 @@ def _extract_start_date(start_row, url, table):
     return int(day), int(month), int(year)
 
 
-def _detect_header_indices(table, rows):
-    """Detect header and return column indices for known fields.
+def _find_cell_with_class(cells, class_name):
+    """Helper to find a cell with a specific class in a list of cells."""
+    for cell in cells:
+        if class_name in (cell.get("class") or []):
+            return cell
+    return None
 
-    Returns a dict with keys: time, currency, event, forecast, actual, previous (values may be None).
-    """
-    header_cells = []
-    header_row = None
-    thead = table.find("thead")
-    if thead:
-        header_row = thead.find("tr")
-    if not header_row:
-        for r in rows:
-            if r.find("th"):
-                header_row = r
-                break
-    if not header_row and rows:
-        header_row = rows[0]
 
-    if header_row:
-        header_cells = header_row.find_all(["th", "td"])
-    header_texts = [
-        (c.get_text(strip=True) or "").strip().lower() for c in header_cells
-    ]
-
-    def find_idx(keys):
-        for key in keys:
-            for i, h in enumerate(header_texts):
-                if key in h:
-                    return i
+def _find_span_in_cell(cell):
+    """Helper to find a span with text in a cell."""
+    if cell is None:
         return None
-
-    time_col = find_idx(["calendar__time"])
-    currency_col = find_idx(["currency", "curr"])
-    event_col = find_idx(["event", "description", "detail", "news"])
-    forecast_col = find_idx(["forecast", "fcast"])
-    actual_col = find_idx(["actual", "value"])
-    previous_col = find_idx(["previous", "prev"])
-
-    if time_col is None:
-        time_col = 0
-
-    def default_index(base, offset):
-        try:
-            if base is not None:
-                return base + offset
-        except Exception:
-            pass
-        return None
-
-    if currency_col is None:
-        currency_col = default_index(time_col, 1)
-    if event_col is None:
-        event_col = default_index(time_col, 2)
-    if forecast_col is None:
-        forecast_col = default_index(time_col, 3)
-    if actual_col is None:
-        actual_col = default_index(time_col, 4)
-    if previous_col is None:
-        previous_col = default_index(time_col, 5)
-
-    return {
-        "time": time_col,
-        "currency": currency_col,
-        "event": event_col,
-        "forecast": forecast_col,
-        "actual": actual_col,
-        "previous": previous_col,
-    }
+    return cell.find("span")
 
 
-def _parse_row_to_record(row, indices, base_day, base_month, base_year, dt):
+def _normalize_impact_value(span):
+    """Normalize the impact value from a span element."""
+    if span is None:
+        return "n/a"
+    raw = span.get("class") or []
+    if "icon--ff-impact-yel" in raw:
+        return "low"
+    if "icon--ff-impact-ora" in raw:
+        return "medium"
+    if "icon--ff-impact-red" in raw:
+        return "high"
+    return "n/a"
+
+
+def _parse_row_to_record(row, base_day, base_month, base_year, dt):
     """Parse a single table row into a record dict or return None to skip.
-
-    indices: dict from _detect_header_indices
+    Args:
     dt: current rolling datetime used by to_24h
     Returns tuple (record_dict, updated_dt) or (None, dt) on skip.
     """
@@ -254,27 +195,12 @@ def _parse_row_to_record(row, indices, base_day, base_month, base_year, dt):
     if "head" in row_classes or ("new-day" in row_classes and not row.find("td")):
         return None, dt
 
-    cells = row.find_all(["td", "th"])
+    cells = row.find_all(["td"])
     if not cells:
         return None, dt
 
-    time_idx = indices.get("time")
-    time_cell = None
-
-    if time_idx < 0 or time_idx >= len(cells):
-        return None, dt
-
-    time_cell = cells[time_idx]
-    time_text = time_cell.get_text(strip=True)
-
-    if (
-        time_text is None
-        or time_text[-2:-1].lower() not in ("am", "pm")
-        and ":" not in time_text
-    ):
-        time_cell = cells[time_idx + 1] if time_idx + 1 < len(cells) else None
-        if time_cell:
-            time_text = time_cell.get_text(strip=True)
+    time_cell = _find_cell_with_class(cells, "calendar__time")
+    time_text = _safe_cell_text(time_cell)
 
     try:
         local_dt = to_24h(int(base_day), int(base_month), int(base_year), time_text, dt)
@@ -291,99 +217,40 @@ def _parse_row_to_record(row, indices, base_day, base_month, base_year, dt):
     # use shared safe text helper for cells
     # cell_text replacements below will call _safe_cell_text(cells, i)
 
-    def _extract_event_name_from_cell_by_index(i):
-        # helper to extract event text from a cell index using robust selectors
-        if not (0 <= i < len(cells)):
-            return None
-        cell = cells[i]
-        # prefer explicit event title elements commonly used on sites
-        selectors = [
-            ".calendar__event-title",
-            ".event-title",
-            ".calendar__event",
-            ".title",
-        ]
-        for sel in selectors:
-            el = cell.select_one(sel)
-            if el:
-                txt = el.get_text(strip=True)
-                if txt:
-                    return txt
-        # fallback to anchor text inside cell
-        a = cell.find("a")
-        if a:
-            txt = a.get_text(strip=True)
-            if txt:
-                return txt
-        # last resort: the whole cell text
-        txt = cell.get_text(strip=True) or None
-        return txt
-
-    def _find_event_in_row():
-        # Search the entire row first for common event title selectors
-        selectors = [
-            ".calendar__event-title",
-            ".event-title",
-            ".calendar__event",
-            ".title",
-            "[data-event-title]",
-        ]
-        for sel in selectors:
-            el = row.select_one(sel)
-            if el:
-                txt = el.get_text(strip=True)
-                if txt:
-                    return txt
-
-        # Look for anchors with meaningful text in the row
-        for a in row.find_all("a"):
-            txt = a.get_text(strip=True)
-            if txt and not re.match(r"^[0-9:\s-]+$", txt):
-                return txt
-
-        return None
-
     # Currency
-    curr = ""
-    cur_idx = indices.get("currency")
-    if cur_idx is not None:
-        curr = _normalize_cell_value(_safe_cell_text(cells, cur_idx))
+    curr_cell = _find_cell_with_class(cells, "calendar__currency")
+    curr = _safe_cell_text(curr_cell)
     if not curr:
-        curr = _normalize_cell_value(_safe_cell_text(cells, time_idx + 1))
-        if not curr:
-            curr = _normalize_cell_value(_safe_cell_text(cells, time_idx + 2))
-    # remove internal spaces to match previous behavior
-    if curr:
-        curr = curr.replace(" ", "")
-    if not curr:
-        return None, local_dt
+        curr = "n/a"
 
     # Event
-    # Prefer finding event inside the whole row (robust to column layout changes)
-    name = _find_event_in_row()
+    event_cell = _find_cell_with_class(cells, "calendar__event")
+    name = _safe_cell_text(event_cell)
     if not name:
-        ev_idx = indices.get("event")
-        if ev_idx is not None:
-            name = _extract_event_name_from_cell_by_index(ev_idx)
-        if not name:
-            name = _extract_event_name_from_cell_by_index(time_idx + 2)
-    if not name:
-        name = "unknown"
+        return None, local_dt
 
-    def _clean_or_unknown_with_helper(i):
-        v = _normalize_cell_value(_safe_cell_text(cells, i))
-        v = v.replace(" ", "")
-        return v if len(v) > 1 else "unknown"
+    # Forecast
+    forecast_cell = _find_cell_with_class(cells, "calendar__forecast")
+    forecast = _safe_cell_text(forecast_cell)
+    if not forecast:
+        forecast = "n/a"
 
-    forecast = _clean_or_unknown_with_helper(
-        indices.get("forecast") if indices.get("forecast") is not None else time_idx + 3
-    )
-    actual = _clean_or_unknown_with_helper(
-        indices.get("actual") if indices.get("actual") is not None else time_idx + 4
-    )
-    previous = _clean_or_unknown_with_helper(
-        indices.get("previous") if indices.get("previous") is not None else time_idx + 5
-    )
+    # Actual
+    actual_cell = _find_cell_with_class(cells, "calendar__actual")
+    actual = _safe_cell_text(actual_cell)
+    if not actual:
+        actual = "n/a"
+
+    # Previous
+    prev_cell = _find_cell_with_class(cells, "calendar__previous")
+    previous = _safe_cell_text(prev_cell)
+    if not previous:
+        previous = "n/a"
+
+    # Impact
+    impact_cell = _find_cell_with_class(cells, "calendar__impact")
+    impact_span = _find_span_in_cell(impact_cell)
+    impact = _normalize_impact_value(impact_span)
 
     record = {
         "Time": f"{p_day}/{p_month}/{p_year} {hour}:{minute}",
@@ -392,6 +259,7 @@ def _parse_row_to_record(row, indices, base_day, base_month, base_year, dt):
         "Forecast": forecast,
         "Actual": actual,
         "Previous": previous,
+        "Impact": impact,
     }
 
     return record, local_dt
@@ -410,6 +278,7 @@ def parse_calendar_from_html(html, url):
     c_forecast = []
     c_actual = []
     c_prev = []
+    c_impact = []
 
     soup = BeautifulSoup(html, "html.parser")
 
@@ -426,11 +295,9 @@ def parse_calendar_from_html(html, url):
     tbody = table.find("tbody")
     rows = tbody.find_all("tr") if tbody else table.find_all("tr")
 
-    indices = _detect_header_indices(table, rows)
-
     for row in rows:
         try:
-            rec, dt = _parse_row_to_record(row, indices, day, month, year, dt)
+            rec, dt = _parse_row_to_record(row, day, month, year, dt)
             if not rec:
                 continue
             c_time.append(rec["Time"])
@@ -439,6 +306,7 @@ def parse_calendar_from_html(html, url):
             c_forecast.append(rec["Forecast"])
             c_actual.append(rec["Actual"])
             c_prev.append(rec["Previous"])
+            c_impact.append(rec["Impact"])
         except Exception:
             logger.exception("Failed to parse one event row, skipping")
             continue
@@ -450,6 +318,7 @@ def parse_calendar_from_html(html, url):
         "Forecast": c_forecast,
         "Actual": c_actual,
         "Previous": c_prev,
+        "Impact": c_impact,
     }
 
     try:
@@ -466,6 +335,7 @@ def parse_calendar_from_html(html, url):
                     "Forecast": c_forecast[i],
                     "Actual": c_actual[i],
                     "Previous": c_prev[i],
+                    "Impact": c_impact[i],
                 }
             )
         return records

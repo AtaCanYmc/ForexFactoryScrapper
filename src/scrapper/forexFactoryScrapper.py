@@ -25,5 +25,5 @@ def get24H(day, month, year, am_pm, last=None):
 
 def getRecords(url):
     """Fetch calendar page and parse events into records (delegates to common parser)."""
-    pageHTML = getPageHTML(url)
-    return parse_calendar_from_html(pageHTML, url)
+    page_html = getPageHTML(url)
+    return parse_calendar_from_html(page_html, url)
