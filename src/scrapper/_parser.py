@@ -54,20 +54,60 @@ def _find_start_row(table):
     return start_row
 
 
+# Helper: normalize cell values in one place
+def _normalize_cell_value(s, collapse_whitespace=True):
+    """Normalize a raw cell string: strip and optionally collapse internal whitespace.
+
+    Args:
+        s: input string or None
+        collapse_whitespace: if True, replace runs of whitespace with a single space
+    Returns:
+        normalized string ('' for None or empty)
+    """
+    if s is None:
+        return ""
+    out = str(s).strip()
+    if collapse_whitespace:
+        out = re.sub(r"\s+", " ", out)
+    return out
+
+
+# Helper: safely get text from a cells list by index
+def _safe_cell_text(cells, i):
+    if 0 <= i < len(cells):
+        return cells[i].get_text(" ", strip=True) or ""
+    return ""
+
+
+# Helper: find a date node either on the provided row or in the table
+def _find_date_node(start_row, table):
+    """Return a Tag with date text or None.
+
+    Tries row-local spans first, then a table-wide selector.
+    """
+    if start_row is None:
+        return None
+    # prefer explicit class
+    node = start_row.find_next("span", class_="date")
+    if node:
+        return node
+    node = start_row.find("span")
+    if node and getattr(node, "text", None):
+        return node
+    # fallback to table-wide
+    node = table.select_one("span.date, .date")
+    if node:
+        return node
+    return None
+
+
 def _extract_start_date(start_row, url, table):
     """Extract day, month, year from the start_row text or url.
 
     Returns (day, month, year) as ints or raises ValueError.
     """
-    # Try to find a span.date or any span
-    startDate = start_row.find_next("span", class_="date")
-    if not startDate:
-        startDate = start_row.find("span")
-    # If still not found on the start_row, try anywhere in the table (some markup places date differently)
-    if not startDate:
-        start_span = table.select_one("span.date, .date")
-        if start_span:
-            startDate = start_span
+    # Try to find a date node on the row first, then the table
+    startDate = _find_date_node(start_row, table)
 
     if not startDate or not getattr(startDate, "text", None):
         logger.error("Start date text not found")
@@ -248,10 +288,8 @@ def _parse_row_to_record(row, indices, base_day, base_month, base_year, dt):
     hour = f"{local_dt.hour:02d}"
     minute = f"{local_dt.minute:02d}"
 
-    def cell_text(i):
-        if 0 <= i < len(cells):
-            return cells[i].get_text(strip=True) or ""
-        return ""
+    # use shared safe text helper for cells
+    # cell_text replacements below will call _safe_cell_text(cells, i)
 
     def _extract_event_name_from_cell_by_index(i):
         # helper to extract event text from a cell index using robust selectors
@@ -309,11 +347,14 @@ def _parse_row_to_record(row, indices, base_day, base_month, base_year, dt):
     curr = ""
     cur_idx = indices.get("currency")
     if cur_idx is not None:
-        curr = cell_text(cur_idx).replace("\n", "").replace(" ", "")
+        curr = _normalize_cell_value(_safe_cell_text(cells, cur_idx))
     if not curr:
-        curr = cell_text(time_idx + 1).replace("\n", "").replace(" ", "")
+        curr = _normalize_cell_value(_safe_cell_text(cells, time_idx + 1))
         if not curr:
-            curr = cell_text(time_idx + 2).replace("\n", "").replace(" ", "")
+            curr = _normalize_cell_value(_safe_cell_text(cells, time_idx + 2))
+    # remove internal spaces to match previous behavior
+    if curr:
+        curr = curr.replace(" ", "")
     if not curr:
         return None, local_dt
 
@@ -329,28 +370,19 @@ def _parse_row_to_record(row, indices, base_day, base_month, base_year, dt):
     if not name:
         name = "unknown"
 
-    def clean_or_unknown(s):
-        s2 = (s or "").replace("\n", "").replace(" ", "")
-        return s2 if len(s2) > 1 else "unknown"
+    def _clean_or_unknown_with_helper(i):
+        v = _normalize_cell_value(_safe_cell_text(cells, i))
+        v = v.replace(" ", "")
+        return v if len(v) > 1 else "unknown"
 
-    forecast = clean_or_unknown(
-        cell_text(
-            indices.get("forecast")
-            if indices.get("forecast") is not None
-            else time_idx + 3
-        )
+    forecast = _clean_or_unknown_with_helper(
+        indices.get("forecast") if indices.get("forecast") is not None else time_idx + 3
     )
-    actual = clean_or_unknown(
-        cell_text(
-            indices.get("actual") if indices.get("actual") is not None else time_idx + 4
-        )
+    actual = _clean_or_unknown_with_helper(
+        indices.get("actual") if indices.get("actual") is not None else time_idx + 4
     )
-    previous = clean_or_unknown(
-        cell_text(
-            indices.get("previous")
-            if indices.get("previous") is not None
-            else time_idx + 5
-        )
+    previous = _clean_or_unknown_with_helper(
+        indices.get("previous") if indices.get("previous") is not None else time_idx + 5
     )
 
     record = {
