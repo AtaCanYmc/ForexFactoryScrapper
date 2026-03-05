@@ -219,7 +219,6 @@ def _parse_row_to_record(row, indices, base_day, base_month, base_year, dt):
         return None, dt
 
     time_idx = indices.get("time")
-    print(cells[time_idx])
     time_cell = None
 
     if time_idx < 0 or time_idx >= len(cells):
@@ -237,7 +236,6 @@ def _parse_row_to_record(row, indices, base_day, base_month, base_year, dt):
         if time_cell:
             time_text = time_cell.get_text(strip=True)
 
-    print(time_text)
     try:
         local_dt = to_24h(int(base_day), int(base_month), int(base_year), time_text, dt)
     except Exception:
