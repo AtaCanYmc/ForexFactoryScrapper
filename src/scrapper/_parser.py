@@ -164,7 +164,7 @@ def _detect_header_indices(table, rows):
                     return i
         return None
 
-    time_col = find_idx(["time"])
+    time_col = find_idx(["calendar__time"])
     currency_col = find_idx(["currency", "curr"])
     event_col = find_idx(["event", "description", "detail", "news"])
     forecast_col = find_idx(["forecast", "fcast"])
@@ -172,11 +172,7 @@ def _detect_header_indices(table, rows):
     previous_col = find_idx(["previous", "prev"])
 
     if time_col is None:
-        for i, c in enumerate(header_cells):
-            cls = c.get("class") or []
-            if any("time" in cl for cl in cls):
-                time_col = i
-                break
+        time_col = 0
 
     def default_index(base, offset):
         try:
@@ -223,29 +219,25 @@ def _parse_row_to_record(row, indices, base_day, base_month, base_year, dt):
         return None, dt
 
     time_idx = indices.get("time")
+    print(cells[time_idx])
     time_cell = None
-    if time_idx is None:
-        for idx, cell in enumerate(cells):
-            txt = (cell.get_text() or "").strip().lower()
-            cls = cell.get("class") or []
-            if (
-                any("time" in c for c in cls)
-                or (":" in txt)
-                or ("am" in txt)
-                or ("pm" in txt)
-                or ("day" in txt)
-            ):
-                time_idx = idx
-                time_cell = cell
-                break
-        if time_idx is None:
-            return None, dt
-    else:
-        if time_idx < 0 or time_idx >= len(cells):
-            return None, dt
-        time_cell = cells[time_idx]
 
+    if time_idx < 0 or time_idx >= len(cells):
+        return None, dt
+
+    time_cell = cells[time_idx]
     time_text = time_cell.get_text(strip=True)
+
+    if (
+        time_text is None
+        or time_text[-2:-1].lower() not in ("am", "pm")
+        and ":" not in time_text
+    ):
+        time_cell = cells[time_idx + 1] if time_idx + 1 < len(cells) else None
+        if time_cell:
+            time_text = time_cell.get_text(strip=True)
+
+    print(time_text)
     try:
         local_dt = to_24h(int(base_day), int(base_month), int(base_year), time_text, dt)
     except Exception:
