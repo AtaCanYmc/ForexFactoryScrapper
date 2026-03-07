@@ -9,6 +9,7 @@ from .forex_factory_routes import forex_bp
 from .crypto_craft_routes import crypto_bp
 from .energy_exch_routes import energy_bp
 from .metals_mine_routes import metals_bp
+from .root_routes import root_bp
 
 __all__ = [
     "helper_bp",
@@ -16,7 +17,7 @@ __all__ = [
     "crypto_bp",
     "energy_bp",
     "metals_bp",
-    "register_blueprints",
+    "root_bp",
 ]
 
 
@@ -27,6 +28,7 @@ def register_blueprints(app, swagger_bp=None):
         app: Flask application instance
         swagger_bp: optional blueprint for swagger routes to register as well
     """
+    app.register_blueprint(root_bp)
     app.register_blueprint(helper_bp)
     app.register_blueprint(forex_bp)
     app.register_blueprint(crypto_bp)

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ForexFactoryScrapper — Welcome</title>
+    <style>
+      :root{
+        --bg: linear-gradient(135deg,#0f172a 0%,#0b1220 100%);
+        --card: rgba(255,255,255,0.04);
+        --accent: #06b6d4;
+        --muted: #94a3b8;
+        --glass: rgba(255,255,255,0.06);
+      }
+      html,body{height:100%;margin:0}
+      body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color:#e6eef8; background:var(--bg); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale }
+      .container{max-width:1000px;margin:40px auto;padding:24px}
+      .hero{background:linear-gradient(180deg, rgba(255,255,255,0.03), transparent); border-radius:12px;padding:28px;box-shadow:0 6px 18px rgba(2,6,23,0.6);display:flex;gap:20px;align-items:center}
+      .brand{flex:1}
+      h1{margin:0;font-size:1.6rem}
+      p.lead{margin:8px 0 0;color:var(--muted)}
+      .actions{margin-top:18px}
+      .btn{display:inline-block;padding:10px 14px;border-radius:8px;text-decoration:none;color:#04263b;font-weight:600;background:#e6eef8}
+      .btn-outline{background:transparent;border:1px solid rgba(255,255,255,0.08);color:var(--accent)}
+
+      .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:18px}
+      .card{background:var(--card);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+      .card h3{margin:0 0 8px;font-size:1rem}
+      .card p{margin:0;color:var(--muted);font-size:.92rem}
+      .links a.card-link{display:block;margin-top:10px;padding:8px;border-radius:8px;background:var(--glass);text-decoration:none;color:#e6eef8;font-weight:600;border:1px solid rgba(255,255,255,0.03)}
+
+      .footer{margin-top:20px;text-align:center;color:var(--muted);font-size:.9rem}
+      pre.example{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;overflow:auto;color:#dbeafe;border:1px solid rgba(255,255,255,0.03)}
+
+      @media (max-width:640px){.hero{flex-direction:column;align-items:flex-start;padding:18px}.brand{width:100%}h1{font-size:1.25rem}}
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="hero">
+        <div class="brand">
+          <h1>ForexFactoryScrapper</h1>
+          <p class="lead">A lightweight scraper API for economic calendar data — quick access to multiple sources.</p>
+          <div class="actions">
+            <a class="btn" href="/swagger">Open Swagger</a>
+            <a class="btn btn-outline" href="/api/health">Health</a>
+          </div>
+        </div>
+        <div style="min-width:140px;text-align:right">
+          <div style="background:rgba(255,255,255,0.02);padding:10px;border-radius:10px">🔎<div style="font-size:0.78rem;color:var(--muted);margin-top:6px">Try an example</div></div>
+        </div>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <h3>Hello</h3>
+          <p>Basic sanity endpoint</p>
+          <a class="card-link" href="/api/hello">GET /api/hello</a>
+        </div>
+
+        <div class="card">
+          <h3>Forex Factory</h3>
+          <p>Daily economic events from Forex Factory</p>
+          <a class="card-link" href="/api/forex/daily?day=1&month=1&year=2020">GET /api/forex/daily</a>
+        </div>
+
+        <div class="card">
+          <h3>CryptoCraft</h3>
+          <p>Crypto calendar events</p>
+          <a class="card-link" href="/api/cryptocraft/daily?day=1&month=1&year=2020">GET /api/cryptocraft/daily</a>
+        </div>
+
+        <div class="card">
+          <h3>EnergyExch</h3>
+          <p>Energy exchange events</p>
+          <a class="card-link" href="/api/energyexch/daily?day=1&month=1&year=2020">GET /api/energyexch/daily</a>
+        </div>
+
+        <div class="card">
+          <h3>MetalsMine</h3>
+          <p>Metals market events</p>
+          <a class="card-link" href="/api/metalsmine/daily?day=1&month=1&year=2020">GET /api/metalsmine/daily</a>
+        </div>
+      </div>
+
+      <section style="margin-top:18px">
+        <h3 style="margin:0 0 8px">Quick example</h3>
+        <pre class="example">curl "http://localhost:5000/api/forex/daily?day=1&month=1&year=2020"</pre>
+      </section>
+
+      <div class="footer">Hosted locally — open <a href="/swagger" style="color:var(--accent);text-decoration:none">/swagger</a> for API docs (if enabled).</div>
+    </div>
+  </body>
+</html>
