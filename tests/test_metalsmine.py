@@ -41,13 +41,13 @@ def test_metalsmine_invalid_params():
 
 
 def test_metalsmine_success(monkeypatch):
-    monkeypatch.setattr(src_app, "getRecords", lambda url: [SAMPLE_RECORD])
+    monkeypatch.setattr(src_app, "get_records", lambda url: [SAMPLE_RECORD])
     monkeypatch.setattr(
-        src_app, "getURL", lambda day, month, year, timeline: "http://example"
+        src_app, "get_url", lambda day, month, year, timeline: "http://example"
     )
-    monkeypatch.setattr(main, "getRecords", lambda url: [SAMPLE_RECORD])
+    monkeypatch.setattr(main, "get_records", lambda url: [SAMPLE_RECORD])
     monkeypatch.setattr(
-        main, "getURL", lambda day, month, year, timeline: "http://example"
+        main, "get_url", lambda day, month, year, timeline: "http://example"
     )
 
     client = app.test_client()
@@ -62,13 +62,13 @@ def test_metalsmine_success(monkeypatch):
 
 
 def test_metalsmine_paging_limit(monkeypatch):
-    monkeypatch.setattr(src_app, "getRecords", lambda url: SAMPLE_RECORDS_MULTI)
+    monkeypatch.setattr(src_app, "get_records", lambda url: SAMPLE_RECORDS_MULTI)
     monkeypatch.setattr(
-        src_app, "getURL", lambda day, month, year, timeline: "http://example"
+        src_app, "get_url", lambda day, month, year, timeline: "http://example"
     )
-    monkeypatch.setattr(main, "getRecords", lambda url: SAMPLE_RECORDS_MULTI)
+    monkeypatch.setattr(main, "get_records", lambda url: SAMPLE_RECORDS_MULTI)
     monkeypatch.setattr(
-        main, "getURL", lambda day, month, year, timeline: "http://example"
+        main, "get_url", lambda day, month, year, timeline: "http://example"
     )
 
     client = app.test_client()
@@ -82,13 +82,13 @@ def test_metalsmine_paging_limit(monkeypatch):
 
 
 def test_metalsmine_paging_offset(monkeypatch):
-    monkeypatch.setattr(src_app, "getRecords", lambda url: SAMPLE_RECORDS_MULTI)
+    monkeypatch.setattr(src_app, "get_records", lambda url: SAMPLE_RECORDS_MULTI)
     monkeypatch.setattr(
-        src_app, "getURL", lambda day, month, year, timeline: "http://example"
+        src_app, "get_url", lambda day, month, year, timeline: "http://example"
     )
-    monkeypatch.setattr(main, "getRecords", lambda url: SAMPLE_RECORDS_MULTI)
+    monkeypatch.setattr(main, "get_records", lambda url: SAMPLE_RECORDS_MULTI)
     monkeypatch.setattr(
-        main, "getURL", lambda day, month, year, timeline: "http://example"
+        main, "get_url", lambda day, month, year, timeline: "http://example"
     )
 
     client = app.test_client()
@@ -102,13 +102,13 @@ def test_metalsmine_paging_offset(monkeypatch):
 
 
 def test_metalsmine_paging_limit_offset(monkeypatch):
-    monkeypatch.setattr(src_app, "getRecords", lambda url: SAMPLE_RECORDS_MULTI)
+    monkeypatch.setattr(src_app, "get_records", lambda url: SAMPLE_RECORDS_MULTI)
     monkeypatch.setattr(
-        src_app, "getURL", lambda day, month, year, timeline: "http://example"
+        src_app, "get_url", lambda day, month, year, timeline: "http://example"
     )
-    monkeypatch.setattr(main, "getRecords", lambda url: SAMPLE_RECORDS_MULTI)
+    monkeypatch.setattr(main, "get_records", lambda url: SAMPLE_RECORDS_MULTI)
     monkeypatch.setattr(
-        main, "getURL", lambda day, month, year, timeline: "http://example"
+        main, "get_url", lambda day, month, year, timeline: "http://example"
     )
 
     client = app.test_client()
@@ -122,13 +122,13 @@ def test_metalsmine_paging_limit_offset(monkeypatch):
 
 
 def test_metalsmine_paging_invalid_params(monkeypatch):
-    monkeypatch.setattr(src_app, "getRecords", lambda url: SAMPLE_RECORDS_MULTI)
+    monkeypatch.setattr(src_app, "get_records", lambda url: SAMPLE_RECORDS_MULTI)
     monkeypatch.setattr(
-        src_app, "getURL", lambda day, month, year, timeline: "http://example"
+        src_app, "get_url", lambda day, month, year, timeline: "http://example"
     )
-    monkeypatch.setattr(main, "getRecords", lambda url: SAMPLE_RECORDS_MULTI)
+    monkeypatch.setattr(main, "get_records", lambda url: SAMPLE_RECORDS_MULTI)
     monkeypatch.setattr(
-        main, "getURL", lambda day, month, year, timeline: "http://example"
+        main, "get_url", lambda day, month, year, timeline: "http://example"
     )
 
     client = app.test_client()

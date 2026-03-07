@@ -1,5 +1,6 @@
 import logging
 import re
+import os
 from datetime import datetime
 from bs4 import BeautifulSoup
 from pandas import DataFrame
@@ -9,6 +10,15 @@ from ._time import to_24h
 from ._utils import date_to_string
 
 logger = logging.getLogger(__name__)
+
+# Read class selectors from environment (allows overriding via .env). Defaults kept as before.
+TIME_CLASS = os.getenv("TIME", "calendar__time")
+CURRENCY_CLASS = os.getenv("CURRENCY", "calendar__currency")
+PREV_CLASS = os.getenv("PREVIOUS", "calendar__previous")
+ACTUAL_CLASS = os.getenv("ACTUAL", "calendar__actual")
+FORECAST_CLASS = os.getenv("FORECAST", "calendar__forecast")
+IMPACT_CLASS = os.getenv("IMPACT", "calendar__impact")
+EVENT_CLASS = os.getenv("EVENT", "calendar__event")
 
 
 def _find_table(soup):
@@ -157,31 +167,113 @@ def _extract_start_date(start_row, url, table):
 
 
 def _find_cell_with_class(cells, class_name):
-    """Helper to find a cell with a specific class in a list of cells."""
+    """Helper to find a cell with a specific class in a list of cells.
+
+    Behavior:
+    - First, look for a td whose class list contains class_name.
+    - Then, look for a descendant inside any td with that class and return the descendant.
+    - Finally, fall back to a column index mapping (time=0, currency=1, event=2, forecast=3, actual=4, previous=5, impact=6)
+    """
+    # 1) direct td with class
     for cell in cells:
         if class_name in (cell.get("class") or []):
             return cell
+
+    # 2) descendant element inside a td
+    for cell in cells:
+        descendant = cell.find(class_=class_name)
+        if descendant:
+            return descendant
+
+    # 3) fallback by column index
+    order = [
+        TIME_CLASS,
+        CURRENCY_CLASS,
+        EVENT_CLASS,
+        FORECAST_CLASS,
+        ACTUAL_CLASS,
+        PREV_CLASS,
+        IMPACT_CLASS,
+    ]
+    try:
+        idx = order.index(class_name)
+        if idx < len(cells):
+            return cells[idx]
+    except ValueError:
+        pass
+
     return None
 
 
-def _find_span_in_cell(cell):
-    """Helper to find a span with text in a cell."""
+def _find_impact_node(cell):
+    """Locate the most likely node inside impact cell that indicates impact.
+
+    Tries elements with known icon classes, then img, then span/div.
+    """
     if cell is None:
         return None
-    return cell.find("span")
+
+    # 1) any element whose classes contain icon-like indicators
+    for tag in cell.find_all(True):
+        classes = tag.get("class") or []
+        if any(
+            re.search(r"icon|impact|calendar__impact-icon|icon--ff-impact", c)
+            for c in classes
+        ):
+            return tag
+
+    # 2) any img element (src often contains 'impact-yel' etc)
+    img = cell.find("img")
+    if img:
+        return img
+
+    # 3) fallback to span or div
+    sp = cell.find("span")
+    if sp:
+        return sp
+    dv = cell.find("div")
+    if dv:
+        return dv
+
+    return None
 
 
-def _normalize_impact_value(span):
-    """Normalize the impact value from a span element."""
-    if span is None:
+def _normalize_impact_value(node):
+    """Normalize the impact value from a node element using classes/src/alt/title.
+
+    Returns one of: 'low', 'medium', 'high', or 'n/a'.
+    """
+    if node is None:
         return "n/a"
-    raw = span.get("class") or []
-    if "icon--ff-impact-yel" in raw:
+
+    # Collect candidate strings from classes, src, alt, title and text
+    classes = " ".join(node.get("class") or [])
+    src = node.get("src") or ""
+    alt = node.get("alt") or ""
+    title = node.get("title") or ""
+    text = getattr(node, "text", "") or ""
+
+    combined = " ".join([classes, src, alt, title, text]).lower()
+
+    # Look for known markers
+    if re.search(
+        r"\b(yel|yellow|impact.*yel|impact.*yellow|impact-yel|ee-impact-yel)\b",
+        combined,
+    ):
         return "low"
-    if "icon--ff-impact-ora" in raw:
+    if re.search(r"\b(ora|orange|impact.*ora|impact.*orange|impact-ora)\b", combined):
         return "medium"
-    if "icon--ff-impact-red" in raw:
+    if re.search(r"\b(red|impact.*red|impact-red)\b", combined):
         return "high"
+
+    # Legacy class names used by previous parser
+    if "icon--ff-impact-yel" in classes:
+        return "low"
+    if "icon--ff-impact-ora" in classes:
+        return "medium"
+    if "icon--ff-impact-red" in classes:
+        return "high"
+
     return "n/a"
 
 
@@ -200,7 +292,7 @@ def _parse_row_to_record(row, base_day, base_month, base_year, dt):
         return None, dt
 
     # --------------- Time ---------------
-    time_cell = _find_cell_with_class(cells, "calendar__time")
+    time_cell = _find_cell_with_class(cells, TIME_CLASS)
     time_text = _safe_cell_text(time_cell)
 
     try:
@@ -210,31 +302,31 @@ def _parse_row_to_record(row, base_day, base_month, base_year, dt):
         return None, dt
 
     # --------------- [Currency] ---------------
-    curr_cell = _find_cell_with_class(cells, "calendar__currency")
+    curr_cell = _find_cell_with_class(cells, CURRENCY_CLASS)
     curr = _safe_cell_text(curr_cell)
 
     # --------------- Event ---------------
-    event_cell = _find_cell_with_class(cells, "calendar__event")
+    event_cell = _find_cell_with_class(cells, EVENT_CLASS)
     name = _safe_cell_text(event_cell)
     if not name or name.lower() in ("n/a", "tbd", "tba"):
         return None, local_dt
 
     # --------------- Forecast ---------------
-    forecast_cell = _find_cell_with_class(cells, "calendar__forecast")
+    forecast_cell = _find_cell_with_class(cells, FORECAST_CLASS)
     forecast = _safe_cell_text(forecast_cell)
 
     # --------------- Actual ---------------
-    actual_cell = _find_cell_with_class(cells, "calendar__actual")
+    actual_cell = _find_cell_with_class(cells, ACTUAL_CLASS)
     actual = _safe_cell_text(actual_cell)
 
     # --------------- Previous ---------------
-    prev_cell = _find_cell_with_class(cells, "calendar__previous")
+    prev_cell = _find_cell_with_class(cells, PREV_CLASS)
     previous = _safe_cell_text(prev_cell)
 
     # --------------- Impact ---------------
-    impact_cell = _find_cell_with_class(cells, "calendar__impact")
-    impact_span = _find_span_in_cell(impact_cell)
-    impact = _normalize_impact_value(impact_span)
+    impact_cell = _find_cell_with_class(cells, IMPACT_CLASS)
+    impact_node = _find_impact_node(impact_cell)
+    impact = _normalize_impact_value(impact_node)
 
     record = {
         "Time": date_to_string(local_dt),

@@ -41,9 +41,9 @@ def test_500_internal_error(monkeypatch):
     def _raise(url):
         raise RuntimeError("boom")
 
-    monkeypatch.setattr(src_app, "getRecords", _raise)
+    monkeypatch.setattr(src_app, "get_records", _raise)
     # Also patch main.getRecords for completeness
-    monkeypatch.setattr(main, "getRecords", _raise)
+    monkeypatch.setattr(main, "get_records", _raise)
 
     client = app.test_client()
     resp = client.get("/api/forex/daily?day=1&month=1&year=2020")
