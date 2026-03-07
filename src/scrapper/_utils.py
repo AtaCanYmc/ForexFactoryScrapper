@@ -1,5 +1,4 @@
 from ._constants import BASE_MONTH_NAMES
-import re
 
 
 def build_url(base_url, day=1, month=1, year=2020, timeline="day"):
@@ -11,8 +10,12 @@ def build_url(base_url, day=1, month=1, year=2020, timeline="day"):
     return f"{base_url}?{timeline}={date_str}"
 
 
-def is_valid_calendar_time(time_str):
-    """Check if a time string is in a valid format (e.g. '12:30pm', '9:00am')."""
-    # Match formats like "12:30pm", "9:00am"
-    pattern = r"^\s*(1[0-2]|0?[1-9])(:[0-5][0-9])?\s*(am|pm)\s*$"
-    return re.match(pattern, time_str.strip(), re.IGNORECASE) is not None
+def date_to_string(local_dt):
+    """Convert a datetime object to the string format used in URLs (e.g. Jan1.2020)."""
+    p_day = f"{local_dt.day:02d}"
+    p_month = f"{local_dt.month:02d}"
+    p_year = f"{local_dt.year:04d}"
+    hour = f"{local_dt.hour:02d}"
+    minute = f"{local_dt.minute:02d}"
+
+    return f"{p_day}/{p_month}/{p_year} {hour}:{minute}"

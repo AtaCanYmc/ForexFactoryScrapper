@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 
 from ._constants import BASE_MONTH_NUMBERS
 from ._time import to_24h
+from ._utils import date_to_string
 
 logger = logging.getLogger(__name__)
 
@@ -90,13 +91,13 @@ def _extract_start_date(start_row, url, table):
     Returns (day, month, year) as ints or raises ValueError.
     """
     # Try to find a date node on the row first, then the table
-    startDate = _find_date_node(start_row, table)
+    start_date = _find_date_node(start_row, table)
 
-    if not startDate or not getattr(startDate, "text", None):
+    if not start_date or not getattr(start_date, "text", None):
         logger.error("Start date text not found")
         raise ValueError("Start date text not found")
 
-    dt_text = startDate.text.strip()
+    dt_text = start_date.text.strip()
 
     # pattern: MonthName Day [Year]
     m = re.search(r"([A-Za-z]{3,9})\s+([0-9]{1,2})(?:,?\s*([0-9]{4}))?", dt_text)
@@ -199,6 +200,7 @@ def _parse_row_to_record(row, base_day, base_month, base_year, dt):
     if not cells:
         return None, dt
 
+    # Time
     time_cell = _find_cell_with_class(cells, "calendar__time")
     time_text = _safe_cell_text(time_cell)
 
@@ -207,12 +209,6 @@ def _parse_row_to_record(row, base_day, base_month, base_year, dt):
     except Exception:
         logger.exception("Failed to parse time for row")
         return None, dt
-
-    p_day = f"{local_dt.day:02d}"
-    p_month = f"{local_dt.month:02d}"
-    p_year = f"{local_dt.year:04d}"
-    hour = f"{local_dt.hour:02d}"
-    minute = f"{local_dt.minute:02d}"
 
     # use shared safe text helper for cells
     # cell_text replacements below will call _safe_cell_text(cells, i)
@@ -253,7 +249,7 @@ def _parse_row_to_record(row, base_day, base_month, base_year, dt):
     impact = _normalize_impact_value(impact_span)
 
     record = {
-        "Time": f"{p_day}/{p_month}/{p_year} {hour}:{minute}",
+        "Time": date_to_string(local_dt),
         "Currency": curr,
         "Event": name,
         "Forecast": forecast,
