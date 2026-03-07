@@ -19,6 +19,7 @@ ACTUAL_CLASS = os.getenv("ACTUAL", "calendar__actual")
 FORECAST_CLASS = os.getenv("FORECAST", "calendar__forecast")
 IMPACT_CLASS = os.getenv("IMPACT", "calendar__impact")
 EVENT_CLASS = os.getenv("EVENT", "calendar__event")
+ROW_ID_ATTR = os.getenv("ROW_ID", "data-event-id")
 
 
 def _find_table(soup):
@@ -283,13 +284,17 @@ def _parse_row_to_record(row, base_day, base_month, base_year, dt):
     dt: current rolling datetime used by to_24h
     Returns tuple (record_dict, updated_dt) or (None, dt) on skip.
     """
-    row_classes = " ".join(row.get("class") or [])
+    row_class_arr = row.get("class") or []
+    row_classes = " ".join(row_class_arr)
     if "head" in row_classes or ("new-day" in row_classes and not row.find("td")):
         return None, dt
 
     cells = row.find_all(["td"])
     if not cells:
         return None, dt
+
+    # --------------- Data Event ID ---------------
+    row_id = row.get(f"{ROW_ID_ATTR}", None)
 
     # --------------- Time ---------------
     time_cell = _find_cell_with_class(cells, TIME_CLASS)
@@ -329,6 +334,7 @@ def _parse_row_to_record(row, base_day, base_month, base_year, dt):
     impact = _normalize_impact_value(impact_node)
 
     record = {
+        "ID": row_id,
         "Time": date_to_string(local_dt),
         "Currency": curr,
         "Event": name,
