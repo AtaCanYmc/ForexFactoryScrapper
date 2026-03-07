@@ -11,12 +11,31 @@
 <script src="https://unpkg.com/swagger-ui-dist@4/swagger-ui-bundle.js"></script>
 <script>
     window.onload = function() {
-      const ui = SwaggerUIBundle({
-        url: "{{ openapi_url }}",
-        dom_id: '#swagger',
-        presets: [SwaggerUIBundle.presets.apis],
-      });
-      window.ui = ui;
+      // If the server provided the spec inline (openapi_spec), use it to initialize
+      // the Swagger UI directly. Otherwise fall back to using the openapi_url.
+      try {
+        {% if openapi_spec is defined %}
+        const spec = {{ openapi_spec|tojson|safe }};
+        const ui = SwaggerUIBundle({
+          spec: spec,
+          dom_id: '#swagger',
+          presets: [SwaggerUIBundle.presets.apis],
+        });
+        {% else %}
+        const ui = SwaggerUIBundle({
+          url: "{{ openapi_url }}",
+          dom_id: '#swagger',
+          presets: [SwaggerUIBundle.presets.apis],
+        });
+        {% endif %}
+        window.ui = ui;
+      } catch (e) {
+        // Use template literal and safe conversion to avoid syntax issues
+        const root = document.getElementById('swagger');
+        const errMsg = (e && e.message) ? e.message : String(e);
+        root.innerHTML = `\n<pre style="color:#c33">Failed to initialize Swagger UI: ${errMsg}</pre>`;
+        console.error('Swagger UI init error', e);
+      }
     };
 </script>
 </body>
