@@ -34,12 +34,12 @@ def daily_data():
         import importlib
 
         main_mod = importlib.import_module("main")
-        main_getRecords = getattr(main_mod, "get_records", None)
-        main_getURL = getattr(main_mod, "get_url", None)
-        if main_getRecords is not None:
-            get_records = main_getRecords
-        if main_getURL is not None:
-            get_url = main_getURL
+        main_get_records = getattr(main_mod, "get_records", None)
+        main_get_url = getattr(main_mod, "get_url", None)
+        if main_get_records is not None:
+            get_records = main_get_records
+        if main_get_url is not None:
+            get_url = main_get_url
     except Exception:
         # ignore if main not available
         pass
@@ -144,54 +144,53 @@ def daily_data():
         return jsonify({"error": "Failed to process records"}), 500
 
 
-# --- New: cryptocraft daily endpoint (mirrors forex endpoint) ---
 @api_bp.route("/api/cryptocraft/daily", methods=["GET"])
 def cryptocraft_daily():
-    # Import getRecords/getURL at runtime so tests can monkeypatch src.app.getRecords
+    # Import get_records/get_url at runtime so tests can monkeypatch src.app.get_records
     try:
         import src.app as src_app
 
-        getRecords = getattr(src_app, "getRecords", None)
-        getURL = getattr(src_app, "getURL", None)
+        get_records = getattr(src_app, "get_records", None)
+        get_url = getattr(src_app, "get_url", None)
     except Exception:
-        getRecords = None
-        getURL = None
+        get_records = None
+        get_url = None
 
     # Also allow top-level `main` module to provide overrides (tests monkeypatch `main`)
     try:
         import importlib
 
         main_mod = importlib.import_module("main")
-        main_getRecords = getattr(main_mod, "getRecords", None)
-        main_getURL = getattr(main_mod, "getURL", None)
-        if main_getRecords is not None:
-            getRecords = main_getRecords
-        if main_getURL is not None:
-            getURL = main_getURL
+        main_get_records = getattr(main_mod, "get_records", None)
+        main_get_url = getattr(main_mod, "get_url", None)
+        if main_get_records is not None:
+            get_records = main_get_records
+        if main_get_url is not None:
+            get_url = main_get_url
     except Exception:
         pass
 
     # Fallback to importing directly from the cryptocraft scrapper
-    if getRecords is None:
+    if get_records is None:
         try:
             from src.scrapper.cryptoCraftScrapper import (
                 get_records as _gr,
                 get_url as _gu,
             )
 
-            getRecords = _gr
-            getURL = _gu
+            get_records = _gr
+            get_url = _gu
         except Exception:
             logger.exception("Failed to import cryptocraft scraper helpers")
             return jsonify({"error": "Server configuration error"}), 500
     else:
-        if getURL is None:
+        if get_url is None:
             try:
                 from src.scrapper.cryptoCraftScrapper import get_url as _gu
 
-                getURL = _gu
+                get_url = _gu
             except Exception:
-                logger.exception("Failed to import cryptocraft getURL")
+                logger.exception("Failed to import cryptocraft get_url")
                 return jsonify({"error": "Server configuration error"}), 500
 
     # validate presence
@@ -247,8 +246,8 @@ def cryptocraft_daily():
             return jsonify({"error": "Parameter 'offset' must be >= 0"}), 400
 
     try:
-        url = getURL(day_i, month_i, year_i, "day")
-        record_json = getRecords(url)
+        url = get_url(day_i, month_i, year_i, "day")
+        record_json = get_records(url)
     except Exception:
         logger.exception("Failed to fetch or parse cryptocraft records")
         raise
@@ -310,51 +309,51 @@ def cryptocraft_daily():
 # --- New: metalsmine daily endpoint (mirrors forex endpoint) ---
 @api_bp.route("/api/metalsmine/daily", methods=["GET"])
 def metalsmine_daily():
-    # Import getRecords/getURL at runtime so tests can monkeypatch src.app.getRecords
+    # Import get_records/get_url at runtime so tests can monkeypatch src.app.get_records
     try:
         import src.app as src_app
 
-        getRecords = getattr(src_app, "getRecords", None)
-        getURL = getattr(src_app, "getURL", None)
+        get_records = getattr(src_app, "get_records", None)
+        get_url = getattr(src_app, "get_url", None)
     except Exception:
-        getRecords = None
-        getURL = None
+        get_records = None
+        get_url = None
 
     # Also allow top-level `main` module to provide overrides (tests monkeypatch `main`)
     try:
         import importlib
 
         main_mod = importlib.import_module("main")
-        main_getRecords = getattr(main_mod, "getRecords", None)
-        main_getURL = getattr(main_mod, "getURL", None)
-        if main_getRecords is not None:
-            getRecords = main_getRecords
-        if main_getURL is not None:
-            getURL = main_getURL
+        main_get_records = getattr(main_mod, "get_records", None)
+        main_get_url = getattr(main_mod, "get_url", None)
+        if main_get_records is not None:
+            get_records = main_get_records
+        if main_get_url is not None:
+            get_url = main_get_url
     except Exception:
         pass
 
     # Fallback to importing directly from the metalsmine scrapper
-    if getRecords is None:
+    if get_records is None:
         try:
             from src.scrapper.metalsMineScrapper import (
                 get_records as _gr,
                 get_url as _gu,
             )
 
-            getRecords = _gr
-            getURL = _gu
+            get_records = _gr
+            get_url = _gu
         except Exception:
             logger.exception("Failed to import metalsmine scraper helpers")
             return jsonify({"error": "Server configuration error"}), 500
     else:
-        if getURL is None:
+        if get_url is None:
             try:
                 from src.scrapper.metalsMineScrapper import get_url as _gu
 
-                getURL = _gu
+                get_url = _gu
             except Exception:
-                logger.exception("Failed to import metalsmine getURL")
+                logger.exception("Failed to import metalsmine get_url")
                 return jsonify({"error": "Server configuration error"}), 500
 
     # validate presence
@@ -407,8 +406,8 @@ def metalsmine_daily():
             return jsonify({"error": "Parameter 'offset' must be >= 0"}), 400
 
     try:
-        url = getURL(day_i, month_i, year_i, "day")
-        record_json = getRecords(url)
+        url = get_url(day_i, month_i, year_i, "day")
+        record_json = get_records(url)
     except Exception:
         logger.exception("Failed to fetch or parse metalsmine records")
         raise
@@ -447,51 +446,51 @@ def metalsmine_daily():
 # --- New: energyexch daily endpoint (mirrors forex endpoint) ---
 @api_bp.route("/api/energyexch/daily", methods=["GET"])
 def energyexch_daily():
-    # Import getRecords/getURL at runtime so tests can monkeypatch src.app.getRecords
+    # Import get_records/get_url at runtime so tests can monkeypatch src.app.get_records
     try:
         import src.app as src_app
 
-        getRecords = getattr(src_app, "getRecords", None)
-        getURL = getattr(src_app, "getURL", None)
+        get_records = getattr(src_app, "get_records", None)
+        get_url = getattr(src_app, "get_url", None)
     except Exception:
-        getRecords = None
-        getURL = None
+        get_records = None
+        get_url = None
 
     # Also allow top-level `main` module to provide overrides (tests monkeypatch `main`)
     try:
         import importlib
 
         main_mod = importlib.import_module("main")
-        main_getRecords = getattr(main_mod, "getRecords", None)
-        main_getURL = getattr(main_mod, "getURL", None)
-        if main_getRecords is not None:
-            getRecords = main_getRecords
-        if main_getURL is not None:
-            getURL = main_getURL
+        main_get_records = getattr(main_mod, "get_records", None)
+        main_get_url = getattr(main_mod, "get_url", None)
+        if main_get_records is not None:
+            get_records = main_get_records
+        if main_get_url is not None:
+            get_url = main_get_url
     except Exception:
         pass
 
     # Fallback to importing directly from the energyexch scrapper
-    if getRecords is None:
+    if get_records is None:
         try:
             from src.scrapper.energyExchScrapper import (
                 get_records as _gr,
                 get_url as _gu,
             )
 
-            getRecords = _gr
-            getURL = _gu
+            get_records = _gr
+            get_url = _gu
         except Exception:
             logger.exception("Failed to import energyexch scraper helpers")
             return jsonify({"error": "Server configuration error"}), 500
     else:
-        if getURL is None:
+        if get_url is None:
             try:
                 from src.scrapper.energyExchScrapper import get_url as _gu
 
-                getURL = _gu
+                get_url = _gu
             except Exception:
-                logger.exception("Failed to import energyexch getURL")
+                logger.exception("Failed to import energyexch get_url")
                 return jsonify({"error": "Server configuration error"}), 500
 
     # validate presence
@@ -544,8 +543,8 @@ def energyexch_daily():
             return jsonify({"error": "Parameter 'offset' must be >= 0"}), 400
 
     try:
-        url = getURL(day_i, month_i, year_i, "day")
-        record_json = getRecords(url)
+        url = get_url(day_i, month_i, year_i, "day")
+        record_json = get_records(url)
     except Exception:
         logger.exception("Failed to fetch or parse energyexch records")
         raise
@@ -582,24 +581,24 @@ def energyexch_daily():
 
 
 def _resolve_helpers(site_module_path):
-    """Return (getRecords, getURL) functions resolved in this order:
+    """Return (get_records, get_url) functions resolved in this order:
     1) src.app module attributes (if callable)
     2) top-level main module attributes (if callable) -- tests may patch this
     3) site-specific scraper module (imported dynamically)
 
     Raises ImportError if site module cannot be imported when needed.
     """
-    getRecords_fn = None
-    getURL_fn = None
+    get_records_fn = None
+    get_url_fn = None
 
     # 1) src.app
     try:
         import src.app as src_app
 
-        if callable(getattr(src_app, "getRecords", None)):
-            getRecords_fn = getattr(src_app, "getRecords")
-        if callable(getattr(src_app, "getURL", None)):
-            getURL_fn = getattr(src_app, "getURL")
+        if callable(getattr(src_app, "get_records", None)):
+            get_records_fn = getattr(src_app, "get_records")
+        if callable(getattr(src_app, "get_url", None)):
+            get_url_fn = getattr(src_app, "get_url")
     except Exception:
         pass
 
@@ -608,19 +607,19 @@ def _resolve_helpers(site_module_path):
         import importlib
 
         main_mod = importlib.import_module("main")
-        if getRecords_fn is None and callable(getattr(main_mod, "getRecords", None)):
-            getRecords_fn = getattr(main_mod, "getRecords")
-        if getURL_fn is None and callable(getattr(main_mod, "getURL", None)):
-            getURL_fn = getattr(main_mod, "getURL")
+        if get_records_fn is None and callable(getattr(main_mod, "get_records", None)):
+            get_records_fn = getattr(main_mod, "get_records")
+        if get_url_fn is None and callable(getattr(main_mod, "get_url", None)):
+            get_url_fn = getattr(main_mod, "get_url")
     except Exception:
         pass
 
     # 3) fallback to site-specific scraper for missing functions
-    if getRecords_fn is None or getURL_fn is None:
+    if get_records_fn is None or get_url_fn is None:
         module = __import__(site_module_path, fromlist=["*"])
-        if getRecords_fn is None and hasattr(module, "getRecords"):
-            getRecords_fn = getattr(module, "getRecords")
-        if getURL_fn is None and hasattr(module, "getURL"):
-            getURL_fn = getattr(module, "getURL")
+        if get_records_fn is None and hasattr(module, "get_records"):
+            get_records_fn = getattr(module, "get_records")
+        if get_url_fn is None and hasattr(module, "get_url"):
+            get_url_fn = getattr(module, "get_url")
 
-    return getRecords_fn, getURL_fn
+    return get_records_fn, get_url_fn
