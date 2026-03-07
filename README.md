@@ -107,6 +107,8 @@ Contributions welcome. Suggested workflow:
 
 If you modify or add a new scraper under `src/scrapper/`, try to keep the `get_records(url)` and `get_url(day, month, year, timeline)` function signatures so the route helpers can call them interchangeably.
 
+**Code of Conduct**: Please read `CODE_OF_CONDUCT.md` before contributing — it describes expected behaviour and reporting contacts.
+
 ---
 
 ## Contact
