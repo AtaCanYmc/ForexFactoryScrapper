@@ -5,23 +5,44 @@ OPENAPI_SPEC = {
         "title": "ForexFactoryScrapper API",
         "version": "1.0.0",
         "description": "OpenAPI spec with schemas for the scraping API",
+        "contact": {"name": "Repo maintainer", "email": "atacanymc@gmail.com"},
+        "license": {"name": "MIT", "url": "https://opensource.org/licenses/MIT"},
     },
+    # Helpful servers entry for local development
+    "servers": [{"url": "http://localhost:5000", "description": "Local dev server"}],
+    "tags": [
+        {"name": "health", "description": "Health and misc endpoints"},
+        {"name": "forex", "description": "ForexFactory scraping endpoints"},
+        {"name": "cryptocraft", "description": "CryptoCraft scraping endpoints"},
+        {"name": "metals", "description": "MetalsMine scraping endpoints"},
+        {"name": "energy", "description": "EnergyExch scraping endpoints"},
+    ],
     "paths": {
+        "/": {
+            "get": {
+                "summary": "Root welcome page",
+                "tags": ["health"],
+                "responses": {"200": {"description": "HTML welcome page"}},
+            }
+        },
         "/api/hello": {
             "get": {
                 "summary": "Hello endpoint",
+                "tags": ["health"],
                 "responses": {"200": {"description": "OK"}},
             }
         },
         "/api/health": {
             "get": {
                 "summary": "Health check",
+                "tags": ["health"],
                 "responses": {"200": {"description": "OK"}},
             }
         },
         "/api/forex/daily": {
             "get": {
                 "summary": "Get forex calendar for a day",
+                "tags": ["forex"],
                 "parameters": [
                     {
                         "name": "day",
@@ -66,37 +87,25 @@ OPENAPI_SPEC = {
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/PaginatedRecords"
-                                },
-                                "examples": {
-                                    "example": {
-                                        "summary": "Sample response",
-                                        "value": {
-                                            "total": 1,
-                                            "offset": 0,
-                                            "limit": None,
-                                            "results": [
-                                                {
-                                                    "Time": "01/01/2020 00:00",
-                                                    "Currency": "USD",
-                                                    "Event": "NFP",
-                                                    "Forecast": "100k",
-                                                    "Actual": "120k",
-                                                    "Previous": "90k",
-                                                }
-                                            ],
-                                        },
-                                    }
-                                },
+                                }
                             }
                         },
                     },
-                    "400": {"description": "Bad Request - invalid params"},
+                    "400": {
+                        "description": "Bad Request - invalid params",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        },
+                    },
                 },
             }
         },
         "/api/cryptocraft/daily": {
             "get": {
                 "summary": "Get cryptocraft events for a day",
+                "tags": ["cryptocraft"],
                 "parameters": [
                     {
                         "name": "day",
@@ -141,37 +150,25 @@ OPENAPI_SPEC = {
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/PaginatedCryptoRecords"
-                                },
-                                "examples": {
-                                    "example": {
-                                        "summary": "Cryptocraft sample response",
-                                        "value": {
-                                            "total": 1,
-                                            "offset": 0,
-                                            "limit": None,
-                                            "results": [
-                                                {
-                                                    "Time": "01/01/2020 00:00",
-                                                    "Impact": "high",
-                                                    "Event": "Protocol Upgrade",
-                                                    "Forecast": "n/a",
-                                                    "Actual": "n/a",
-                                                    "Previous": "n/a",
-                                                }
-                                            ],
-                                        },
-                                    }
-                                },
+                                }
                             }
                         },
                     },
-                    "400": {"description": "Bad Request - invalid params"},
+                    "400": {
+                        "description": "Bad Request - invalid params",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        },
+                    },
                 },
             }
         },
         "/api/metalsmine/daily": {
             "get": {
                 "summary": "Get MetalsMine events for a day",
+                "tags": ["metals"],
                 "parameters": [
                     {
                         "name": "day",
@@ -216,37 +213,25 @@ OPENAPI_SPEC = {
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/PaginatedRecords"
-                                },
-                                "examples": {
-                                    "example": {
-                                        "summary": "MetalsMine sample response",
-                                        "value": {
-                                            "total": 1,
-                                            "offset": 0,
-                                            "limit": None,
-                                            "results": [
-                                                {
-                                                    "Time": "01/01/2020 00:00",
-                                                    "Currency": "XAU",
-                                                    "Event": "Gold Inventory Release",
-                                                    "Forecast": "n/a",
-                                                    "Actual": "n/a",
-                                                    "Previous": "n/a",
-                                                }
-                                            ],
-                                        },
-                                    }
-                                },
+                                }
                             }
                         },
                     },
-                    "400": {"description": "Bad Request - invalid params"},
+                    "400": {
+                        "description": "Bad Request - invalid params",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        },
+                    },
                 },
             }
         },
         "/api/energyexch/daily": {
             "get": {
                 "summary": "Get EnergyExch events for a day",
+                "tags": ["energy"],
                 "parameters": [
                     {
                         "name": "day",
@@ -291,31 +276,18 @@ OPENAPI_SPEC = {
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/PaginatedRecords"
-                                },
-                                "examples": {
-                                    "example": {
-                                        "summary": "EnergyExch sample response",
-                                        "value": {
-                                            "total": 1,
-                                            "offset": 0,
-                                            "limit": None,
-                                            "results": [
-                                                {
-                                                    "Time": "01/01/2020 00:00",
-                                                    "Currency": "USD",
-                                                    "Event": "Energy Report",
-                                                    "Forecast": "n/a",
-                                                    "Actual": "n/a",
-                                                    "Previous": "n/a",
-                                                }
-                                            ],
-                                        },
-                                    }
-                                },
+                                }
                             }
                         },
                     },
-                    "400": {"description": "Bad Request - invalid params"},
+                    "400": {
+                        "description": "Bad Request - invalid params",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErrorResponse"}
+                            }
+                        },
+                    },
                 },
             }
         },
@@ -410,6 +382,13 @@ OPENAPI_SPEC = {
                     },
                 },
                 "required": ["total", "offset", "limit", "results"],
+            },
+            "ErrorResponse": {
+                "type": "object",
+                "properties": {
+                    "error": {"type": "string", "description": "Error message"}
+                },
+                "required": ["error"],
             },
         }
     },
