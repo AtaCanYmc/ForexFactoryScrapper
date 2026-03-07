@@ -46,3 +46,56 @@ def _resolve_helpers(site_module_path):
             get_url_fn = getattr(module, "get_url")
 
     return get_records_fn, get_url_fn
+
+
+# Shared validation helpers
+def _validate_date_params(day, month, year):
+    """Validate and parse day/month/year. Returns tuple:
+    (error_message_or_None, day_i, month_i, year_i)
+    """
+    if not (day and month and year):
+        return (
+            "Missing one or more required parameters: day, month, year",
+            None,
+            None,
+            None,
+        )
+
+    try:
+        day_i = int(day)
+        month_i = int(month)
+        year_i = int(year)
+    except ValueError:
+        return "Parameters day, month and year must be integers", None, None, None
+
+    if not (1 <= day_i <= 31 and 1 <= month_i <= 12 and 1900 <= year_i <= 2100):
+        return "Parameters out of reasonable range", None, None, None
+
+    return None, day_i, month_i, year_i
+
+
+def _validate_paging_params(limit_param, offset_param):
+    """Validate limit/offset query params. Returns (limit, offset, error)
+    On success: (limit_int_or_None, offset_int, None)
+    On error: (None, None, error_message)
+    """
+    limit = None
+    offset = 0
+
+    if limit_param is not None:
+        try:
+            limit = int(limit_param)
+        except ValueError:
+            return None, None, "Parameter 'limit' must be an integer"
+        if limit < 0:
+            return None, None, "Parameter 'limit' must be >= 0"
+
+    if offset_param is not None:
+        try:
+            offset = int(offset_param)
+        except ValueError:
+            return None, None, "Parameter 'offset' must be an integer"
+        if offset < 0:
+            return None, None, "Parameter 'offset' must be >= 0"
+
+    return limit, offset, None

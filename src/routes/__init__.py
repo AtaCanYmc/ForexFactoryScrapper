@@ -16,6 +16,7 @@ __all__ = [
     "crypto_bp",
     "energy_bp",
     "metals_bp",
+    "register_blueprints",
 ]
 
 

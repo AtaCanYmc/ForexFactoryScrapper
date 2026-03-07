@@ -1,7 +1,11 @@
 import logging
 from flask import Blueprint, jsonify, request
 
-from .common_helpers import _resolve_helpers
+from .common_helpers import (
+    _resolve_helpers,
+    _validate_date_params,
+    _validate_paging_params,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -16,54 +20,22 @@ def metalsmine_daily():
         logger.exception("Failed to resolve metalsmine scraper helpers")
         return jsonify({"error": "Server configuration error"}), 500
 
-    # validate presence
+    # validate presence and parse
     day = request.args.get("day")
     month = request.args.get("month")
     year = request.args.get("year")
+    date_err, day_i, month_i, year_i = _validate_date_params(day, month, year)
 
-    if not (day and month and year):
-        payload = {
-            "error": ("Missing one or more required parameters: day, month, year")
-        }
-        return jsonify(payload), 400
-
-    # validate types
-    try:
-        day_i = int(day)
-        month_i = int(month)
-        year_i = int(year)
-    except ValueError:
-        return (
-            jsonify({"error": ("Parameters day, month and year must be integers")}),
-            400,
-        )
-
-    # simple range checks
-    if not (1 <= day_i <= 31 and 1 <= month_i <= 12 and 1900 <= year_i <= 2100):
-        return (jsonify({"error": "Parameters out of reasonable range"}), 400)
+    if date_err:
+        return jsonify({"error": date_err}), 400
 
     # Optional paging parameters
     limit_param = request.args.get("limit")
     offset_param = request.args.get("offset")
 
-    limit = None
-    offset = 0
-
-    if limit_param is not None:
-        try:
-            limit = int(limit_param)
-        except ValueError:
-            return jsonify({"error": "Parameter 'limit' must be an integer"}), 400
-        if limit < 0:
-            return jsonify({"error": "Parameter 'limit' must be >= 0"}), 400
-
-    if offset_param is not None:
-        try:
-            offset = int(offset_param)
-        except ValueError:
-            return jsonify({"error": "Parameter 'offset' must be an integer"}), 400
-        if offset < 0:
-            return jsonify({"error": "Parameter 'offset' must be >= 0"}), 400
+    limit, offset, paging_err = _validate_paging_params(limit_param, offset_param)
+    if paging_err:
+        return jsonify({"error": paging_err}), 400
 
     try:
         url = get_url(day_i, month_i, year_i, "day")
