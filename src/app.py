@@ -31,12 +31,20 @@ logger = logging.getLogger(__name__)
 # Register blueprints: API routes and Swagger routes
 # Import inside try/except to avoid hard failure if routes are missing during partial installs
 try:
-    from .routes.swagger_routes import swagger_bp
-    from .routes.api_routes import api_bp
+    from .routes import register_blueprints
 
-    app.register_blueprint(api_bp)
-    app.register_blueprint(swagger_bp)
+    # try to import swagger if available
+    from .routes.swagger_routes import swagger_bp
 except Exception:
+    register_blueprints = None
+    swagger_bp = None
+
+if register_blueprints is not None:
+    try:
+        register_blueprints(app, swagger_bp=swagger_bp)
+    except Exception:
+        logger.exception("Failed to register route blueprints")
+else:
     logger.debug(
         "Route blueprints not available; app will run without registered routes"
     )
