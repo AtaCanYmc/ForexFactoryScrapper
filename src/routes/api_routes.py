@@ -338,8 +338,8 @@ def metalsmine_daily():
     if getRecords is None:
         try:
             from src.scrapper.metalsMineScrapper import (
-                getRecords as _gr,
-                getURL as _gu,
+                get_records as _gr,
+                get_url as _gu,
             )
 
             getRecords = _gr
@@ -350,7 +350,7 @@ def metalsmine_daily():
     else:
         if getURL is None:
             try:
-                from src.scrapper.metalsMineScrapper import getURL as _gu
+                from src.scrapper.metalsMineScrapper import get_url as _gu
 
                 getURL = _gu
             except Exception:

@@ -60,7 +60,7 @@ def _safe_cell_text(cell):
     """Safely extract text from a cell, returning '' if cell is None or has no text."""
     if cell is None:
         return ""
-    return cell.get_text(strip=True) or ""
+    return cell.get_text(strip=True) or "n/a"
 
 
 def _find_date_node(start_row, table):
@@ -212,32 +212,24 @@ def _parse_row_to_record(row, base_day, base_month, base_year, dt):
     # --------------- [Currency] ---------------
     curr_cell = _find_cell_with_class(cells, "calendar__currency")
     curr = _safe_cell_text(curr_cell)
-    if not curr:
-        curr = "n/a"
 
     # --------------- Event ---------------
     event_cell = _find_cell_with_class(cells, "calendar__event")
     name = _safe_cell_text(event_cell)
-    if not name:
+    if not name or name.lower() in ("n/a", "tbd", "tba"):
         return None, local_dt
 
     # --------------- Forecast ---------------
     forecast_cell = _find_cell_with_class(cells, "calendar__forecast")
     forecast = _safe_cell_text(forecast_cell)
-    if not forecast:
-        forecast = "n/a"
 
     # --------------- Actual ---------------
     actual_cell = _find_cell_with_class(cells, "calendar__actual")
     actual = _safe_cell_text(actual_cell)
-    if not actual:
-        actual = "n/a"
 
     # --------------- Previous ---------------
     prev_cell = _find_cell_with_class(cells, "calendar__previous")
     previous = _safe_cell_text(prev_cell)
-    if not previous:
-        previous = "n/a"
 
     # --------------- Impact ---------------
     impact_cell = _find_cell_with_class(cells, "calendar__impact")
@@ -274,8 +266,8 @@ def parse_calendar_from_html(html, url):
     day, month, year = _extract_start_date(start_row, url, table)
     dt = datetime.now()
 
-    tbody = table.find("tbody")
-    rows = tbody.find_all("tr") if tbody else table.find_all("tr")
+    table_body = table.find("tbody")
+    rows = table_body.find_all("tr") if table_body else table.find_all("tr")
     recs = []
     for row in rows:
         try:
