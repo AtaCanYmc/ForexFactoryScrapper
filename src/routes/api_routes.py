@@ -19,34 +19,34 @@ def health():
 
 @api_bp.route("/api/forex/daily", methods=["GET"])
 def daily_data():
-    # Import getRecords/getURL at runtime from src.app so tests can monkeypatch src.app.getRecords
+    # Import get_records/get_url at runtime from src.app so tests can monkeypatch src.app.get_records
     try:
         import src.app as src_app
 
-        getRecords = getattr(src_app, "getRecords", None)
-        getURL = getattr(src_app, "getURL", None)
+        get_records = getattr(src_app, "get_records", None)
+        get_url = getattr(src_app, "get_url", None)
     except Exception:
-        getRecords = None
-        getURL = None
+        get_records = None
+        get_url = None
 
     # Also allow top-level `main` module to provide overrides (tests monkeypatch `main`)
     try:
         import importlib
 
         main_mod = importlib.import_module("main")
-        main_getRecords = getattr(main_mod, "getRecords", None)
-        main_getURL = getattr(main_mod, "getURL", None)
+        main_getRecords = getattr(main_mod, "get_records", None)
+        main_getURL = getattr(main_mod, "get_url", None)
         if main_getRecords is not None:
-            getRecords = main_getRecords
+            get_records = main_getRecords
         if main_getURL is not None:
-            getURL = main_getURL
+            get_url = main_getURL
     except Exception:
         # ignore if main not available
         pass
 
     # Resolve helper functions (src.app, main overrides, fallback to site-specific)
     try:
-        getRecords, getURL = _resolve_helpers("src.scrapper.forexFactoryScrapper")
+        get_records, get_url = _resolve_helpers("src.scrapper.forexFactoryScrapper")
     except Exception:
         logger.exception("Failed to resolve scraper helpers")
         return jsonify({"error": "Server configuration error"}), 500
@@ -103,8 +103,8 @@ def daily_data():
             return jsonify({"error": "Parameter 'offset' must be >= 0"}), 400
 
     try:
-        url = getURL(day_i, month_i, year_i, "day")
-        record_json = getRecords(url)
+        url = get_url(day_i, month_i, year_i, "day")
+        record_json = get_records(url)
     except Exception:
         logger.exception("Failed to fetch or parse records")
         # Let centralized error handlers handle this (return 500) instead of returning 502 here
@@ -175,8 +175,8 @@ def cryptocraft_daily():
     if getRecords is None:
         try:
             from src.scrapper.cryptoCraftScrapper import (
-                getRecords as _gr,
-                getURL as _gu,
+                get_records as _gr,
+                get_url as _gu,
             )
 
             getRecords = _gr
@@ -187,7 +187,7 @@ def cryptocraft_daily():
     else:
         if getURL is None:
             try:
-                from src.scrapper.cryptoCraftScrapper import getURL as _gu
+                from src.scrapper.cryptoCraftScrapper import get_url as _gu
 
                 getURL = _gu
             except Exception:
@@ -475,8 +475,8 @@ def energyexch_daily():
     if getRecords is None:
         try:
             from src.scrapper.energyExchScrapper import (
-                getRecords as _gr,
-                getURL as _gu,
+                get_records as _gr,
+                get_url as _gu,
             )
 
             getRecords = _gr
@@ -487,7 +487,7 @@ def energyexch_daily():
     else:
         if getURL is None:
             try:
-                from src.scrapper.energyExchScrapper import getURL as _gu
+                from src.scrapper.energyExchScrapper import get_url as _gu
 
                 getURL = _gu
             except Exception:

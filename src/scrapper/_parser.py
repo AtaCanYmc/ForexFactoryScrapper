@@ -2,6 +2,7 @@ import logging
 import re
 from datetime import datetime
 from bs4 import BeautifulSoup
+from pandas import DataFrame
 
 from ._constants import BASE_MONTH_NUMBERS
 from ._time import to_24h
@@ -55,7 +56,6 @@ def _find_start_row(table):
     return start_row
 
 
-# Helper: safely get text from a cell
 def _safe_cell_text(cell):
     """Safely extract text from a cell, returning '' if cell is None or has no text."""
     if cell is None:
@@ -63,7 +63,6 @@ def _safe_cell_text(cell):
     return cell.get_text(strip=True) or ""
 
 
-# Helper: find a date node either on the provided row or in the table
 def _find_date_node(start_row, table):
     """Return a Tag with date text or None.
 
@@ -200,7 +199,7 @@ def _parse_row_to_record(row, base_day, base_month, base_year, dt):
     if not cells:
         return None, dt
 
-    # Time
+    # --------------- Time ---------------
     time_cell = _find_cell_with_class(cells, "calendar__time")
     time_text = _safe_cell_text(time_cell)
 
@@ -210,40 +209,37 @@ def _parse_row_to_record(row, base_day, base_month, base_year, dt):
         logger.exception("Failed to parse time for row")
         return None, dt
 
-    # use shared safe text helper for cells
-    # cell_text replacements below will call _safe_cell_text(cells, i)
-
-    # Currency
+    # --------------- [Currency] ---------------
     curr_cell = _find_cell_with_class(cells, "calendar__currency")
     curr = _safe_cell_text(curr_cell)
     if not curr:
         curr = "n/a"
 
-    # Event
+    # --------------- Event ---------------
     event_cell = _find_cell_with_class(cells, "calendar__event")
     name = _safe_cell_text(event_cell)
     if not name:
         return None, local_dt
 
-    # Forecast
+    # --------------- Forecast ---------------
     forecast_cell = _find_cell_with_class(cells, "calendar__forecast")
     forecast = _safe_cell_text(forecast_cell)
     if not forecast:
         forecast = "n/a"
 
-    # Actual
+    # --------------- Actual ---------------
     actual_cell = _find_cell_with_class(cells, "calendar__actual")
     actual = _safe_cell_text(actual_cell)
     if not actual:
         actual = "n/a"
 
-    # Previous
+    # --------------- Previous ---------------
     prev_cell = _find_cell_with_class(cells, "calendar__previous")
     previous = _safe_cell_text(prev_cell)
     if not previous:
         previous = "n/a"
 
-    # Impact
+    # --------------- Impact ---------------
     impact_cell = _find_cell_with_class(cells, "calendar__impact")
     impact_span = _find_span_in_cell(impact_cell)
     impact = _normalize_impact_value(impact_span)
@@ -266,15 +262,6 @@ def parse_calendar_from_html(html, url):
 
     Raises ValueError for parse problems (consistent with existing scrapers).
     """
-    from pandas import DataFrame  # imported lazily to keep module import lightweight
-
-    c_time = []
-    c_curr = []
-    c_event = []
-    c_forecast = []
-    c_actual = []
-    c_prev = []
-    c_impact = []
 
     soup = BeautifulSoup(html, "html.parser")
 
@@ -285,53 +272,24 @@ def parse_calendar_from_html(html, url):
 
     start_row = _find_start_row(table)
     day, month, year = _extract_start_date(start_row, url, table)
-
     dt = datetime.now()
 
     tbody = table.find("tbody")
     rows = tbody.find_all("tr") if tbody else table.find_all("tr")
-
+    recs = []
     for row in rows:
         try:
             rec, dt = _parse_row_to_record(row, day, month, year, dt)
             if not rec:
                 continue
-            c_time.append(rec["Time"])
-            c_curr.append(rec["Currency"])
-            c_event.append(rec["Event"])
-            c_forecast.append(rec["Forecast"])
-            c_actual.append(rec["Actual"])
-            c_prev.append(rec["Previous"])
-            c_impact.append(rec["Impact"])
+            recs.append(rec)
         except Exception:
             logger.exception("Failed to parse one event row, skipping")
             continue
 
-    data = {
-        "Time": c_time,
-        "Currency": c_curr,
-        "Event": c_event,
-        "Forecast": c_forecast,
-        "Actual": c_actual,
-        "Previous": c_prev,
-        "Impact": c_impact,
-    }
-
     try:
-        df = DataFrame(data)
+        df = DataFrame(recs)
         return df.to_dict(orient="records")
     except Exception:
-        records = []
-        for i in range(len(c_time)):
-            records.append(
-                {
-                    "Time": c_time[i],
-                    "Currency": c_curr[i],
-                    "Event": c_event[i],
-                    "Forecast": c_forecast[i],
-                    "Actual": c_actual[i],
-                    "Previous": c_prev[i],
-                    "Impact": c_impact[i],
-                }
-            )
-        return records
+        logger.exception("Failed to convert records to DataFrame")
+        raise ValueError("Failed to convert records to DataFrame")
