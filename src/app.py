@@ -21,7 +21,12 @@ else:
 # Ensure Flask uses the package's templates directory
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
 app = Flask(__name__, template_folder=TEMPLATES_DIR)
-CORS(app)
+
+# Configure CORS to allow all origins for all routes (explicit)
+# This avoids cross-origin issues when Swagger UI issues requests from different
+# hostnames (localhost vs 127.0.0.1). If you need to lock this down in prod,
+# set a specific origin or use environment config.
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Configure basic logging
 logging.basicConfig(level=logging.INFO)
