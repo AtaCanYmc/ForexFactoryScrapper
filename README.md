@@ -1,3 +1,5 @@
+
+
 # ForexFactoryScrapper
 
 [![CI](https://github.com/AtaCanYmc/ForexFactoryScrapper/actions/workflows/ci.yml/badge.svg)](https://github.com/AtaCanYmc/ForexFactoryScrapper/actions) [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/AtaCanYmc/ForexFactoryScrapper/blob/main/LICENSE)
@@ -152,7 +154,3 @@ If you modify or add a new scraper under `src/scrapper/`, try to keep the `get_r
 ## Contact
 
 Maintainer: Ata Can — atacanymc@gmail.com
-
----
-
-If you want, I can also generate a short `CONTRIBUTING.md` or add CI steps to run lint/tests automatically on PRs. Let me know what else to update.
