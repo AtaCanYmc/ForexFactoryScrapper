@@ -15,8 +15,17 @@ def register_middleware(app):
         g.correlation_id = cid
 
     @app.after_request
-    def add_correlation_header(response):
+    def add_security_headers(response):
         cid = getattr(g, "correlation_id", None)
         if cid:
             response.headers.setdefault("X-Request-ID", cid)
+        # Defensive HTTP security headers
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+        response.headers.setdefault(
+            "Referrer-Policy", "strict-origin-when-cross-origin"
+        )
+        response.headers.setdefault(
+            "Permissions-Policy", "geolocation=(), microphone=(), camera=()"
+        )
         return response

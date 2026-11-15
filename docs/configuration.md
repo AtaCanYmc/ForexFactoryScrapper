@@ -6,9 +6,12 @@ ForexFactoryScrapper loads settings through system environment variables or a lo
 
 | Variable | Type | Default | Required | Description |
 | :--- | :--- | :--- | :---: | :--- |
-| `HOST` | String | `0.0.0.0` | No | Network interface address to bind HTTP listener. |
+| `HOST` | String | `127.0.0.1` | No | Network interface address to bind HTTP listener (`0.0.0.0` in Docker). |
 | `PORT` | Integer | `5000` | No | Port number for incoming HTTP connections. |
-| `DEBUG` | Boolean | `True` | No | Enables Flask debug mode and reload on code changes. |
+| `DEBUG` | Boolean | `False` | No | Enables Flask debug mode and reload on code changes. |
+| `CORS_ORIGINS` | Comma-separated | `*` | No | Allowed CORS origin URLs. |
+| `MAX_BUNDLE_DAYS` | Integer | `31` | No | Maximum allowed date span for the multi-source bundle endpoint. |
+| `MAX_SITEMAP_PAGES` | Integer | `100` | No | Maximum allowed pages to crawl for the sitemaps endpoint. |
 | `DOTENV_PATH` | String (Path) | None | No | Explicit file path to load environment variables from. |
 
 ## Example Configuration
@@ -23,9 +26,16 @@ Default `.env` contents:
 
 ```ini
 # Host and port for Flask HTTP API
-HOST=0.0.0.0
+HOST=127.0.0.1
 PORT=5000
 
-# Debug mode: True or False
-DEBUG=True
+# Debug mode: True or False (keep False in production)
+DEBUG=False
+
+# Allowed CORS origins
+CORS_ORIGINS=*
+
+# Resource limits (Denial of Service prevention)
+MAX_BUNDLE_DAYS=31
+MAX_SITEMAP_PAGES=100
 ```

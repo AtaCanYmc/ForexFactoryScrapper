@@ -79,7 +79,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-The application listens on `http://0.0.0.0:5000` by default.
+The application listens on `http://127.0.0.1:5000` by default (or `http://0.0.0.0:5000` inside Docker).
 
 Interactive documentation interfaces:
 - Web Welcome Page: `http://localhost:5000/`
@@ -223,9 +223,12 @@ The service reads configuration from environment variables or a local `.env` fil
 
 | Variable | Type | Default | Required | Description |
 | :--- | :--- | :--- | :---: | :--- |
-| `HOST` | String | `0.0.0.0` | No | Network interface to bind the Flask server. |
+| `HOST` | String | `127.0.0.1` | No | Network interface to bind the Flask server (`0.0.0.0` in Docker). |
 | `PORT` | Integer | `5000` | No | Port number to accept incoming connections. |
-| `DEBUG` | Boolean | `True` | No | Enable Flask debug reloader and error tracebacks. |
+| `DEBUG` | Boolean | `False` | No | Enable Flask debug reloader and error tracebacks. |
+| `CORS_ORIGINS` | Comma-separated | `*` | No | Allowed CORS origin URLs. |
+| `MAX_BUNDLE_DAYS` | Integer | `31` | No | Maximum allowed date span for the multi-source bundle endpoint. |
+| `MAX_SITEMAP_PAGES` | Integer | `100` | No | Maximum allowed pages to crawl for the sitemaps endpoint. |
 | `DOTENV_PATH` | String (Path) | None | No | Explicit file path to load environment variables from. |
 
 ## Testing and Verification

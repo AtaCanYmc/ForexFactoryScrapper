@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 import logging
+import os
 
 from forex_pytory.core.scraper import (
     forex_factory_scraper,
@@ -16,6 +17,8 @@ from .common_helpers import (
 logger = logging.getLogger(__name__)
 
 bundle_bp = Blueprint("bundle", __name__)
+
+MAX_BUNDLE_DAYS = int(os.getenv("MAX_BUNDLE_DAYS", "31"))
 
 
 @bundle_bp.route("/api/bundle", methods=["GET"])
@@ -54,7 +57,7 @@ def get_economic_events_bundle():
         )
 
     date_err, start_date, end_date = _validate_date_range_params(
-        start_date_str, end_date_str
+        start_date_str, end_date_str, max_days=MAX_BUNDLE_DAYS
     )
     if date_err:
         return jsonify({"error": "Invalid date parameters", "message": date_err}), 400

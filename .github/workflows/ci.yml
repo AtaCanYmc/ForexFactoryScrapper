@@ -38,9 +38,13 @@ jobs:
         run: |
           python -m pip install -r requirements.txt
 
-      - name: Install dev tools (black, flake8)
+      - name: Install dev & security tools (black, flake8, bandit)
         run: |
-          python -m pip install black flake8
+          python -m pip install black flake8 bandit
+
+      - name: Security scan (bandit)
+        run: |
+          bandit -r src/
 
       - name: Lint (black)
         run: |

@@ -22,11 +22,15 @@ else:
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
 app = Flask(__name__, template_folder=TEMPLATES_DIR)
 
-# Configure CORS to allow all origins for all routes (explicit)
-# This avoids cross-origin issues when Swagger UI issues requests from different
-# hostnames (localhost vs 127.0.0.1). If you need to lock this down in prod,
-# set a specific origin or use environment config.
-CORS(app, resources={r"/*": {"origins": "*"}})
+# Configure CORS: allow configurable origins via CORS_ORIGINS (comma-separated),
+# defaulting to "*" for development and Swagger UI compatibility.
+cors_origins_env = os.getenv("CORS_ORIGINS")
+allowed_origins = (
+    [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()]
+    if cors_origins_env
+    else "*"
+)
+CORS(app, resources={r"/*": {"origins": allowed_origins}})
 
 # Configure basic logging
 logging.basicConfig(level=logging.INFO)
@@ -77,15 +81,15 @@ def run_app():
     This function is safe to import and call from external wrappers.
     """
     # Allow configuration via environment variables or .env file.
-    # Defaults keep previous behavior.
-    host = os.getenv("HOST", "0.0.0.0")
+    # Safe defaults: 127.0.0.1 (local only) and DEBUG=False to avoid exposing Werkzeug debugger.
+    host = os.getenv("HOST", "127.0.0.1")
     try:
         port = int(os.getenv("PORT", "5000"))
     except ValueError:
         logger.warning("PORT env var is not an integer; falling back to 5000")
         port = 5000
 
-    debug_env = os.getenv("DEBUG", "True").lower()
+    debug_env = os.getenv("DEBUG", "False").lower()
     debug = debug_env in ("1", "true", "yes", "on")
 
     try:

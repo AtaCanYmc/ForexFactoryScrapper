@@ -1,4 +1,5 @@
 import logging
+import os
 from flask import Blueprint, jsonify, request
 
 from .common_helpers import _validate_paging_params, _validate_date_range_params
@@ -6,6 +7,8 @@ from .common_helpers import _validate_paging_params, _validate_date_range_params
 logger = logging.getLogger(__name__)
 
 sitemap_bp = Blueprint("sitemap", __name__)
+
+MAX_SITEMAP_PAGES = int(os.getenv("MAX_SITEMAP_PAGES", "100"))
 
 
 @sitemap_bp.route("/api/forex/sitemaps", methods=["GET"])
@@ -37,11 +40,17 @@ def sitemap_urls():
     max_pages_param = request.args.get("max_pages")
     try:
         max_pages = int(max_pages_param) if max_pages_param is not None else 10
-        if max_pages < 1:
+        if max_pages < 1 or max_pages > MAX_SITEMAP_PAGES:
             raise ValueError()
     except ValueError:
         return (
-            jsonify({"error": "Parameter 'max_pages' must be a positive integer"}),
+            jsonify(
+                {
+                    "error": (
+                        f"Parameter 'max_pages' must be a positive integer between 1 and {MAX_SITEMAP_PAGES}"
+                    )
+                }
+            ),
             400,
         )
 
