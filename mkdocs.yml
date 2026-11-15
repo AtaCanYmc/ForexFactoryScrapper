@@ -54,6 +54,7 @@ nav:
   - Architecture: architecture.md
   - API Reference: api-reference.md
   - Configuration: configuration.md
+  - Roadmap: roadmap.md
   - Contributing: contributing.md
   - Security: security.md
   - License: license.md

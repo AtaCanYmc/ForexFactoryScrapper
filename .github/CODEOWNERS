@@ -1,0 +1,12 @@
+# Global code ownership
+* @AtaCanYmc
+
+# Workflows and automation manifests
+/.github/ @AtaCanYmc
+
+# Security, licensing, and governance
+/LICENSE @AtaCanYmc
+/SECURITY.md @AtaCanYmc
+/CONTRIBUTING.md @AtaCanYmc
+/CODE_OF_CONDUCT.md @AtaCanYmc
+/ROADMAP.md @AtaCanYmc

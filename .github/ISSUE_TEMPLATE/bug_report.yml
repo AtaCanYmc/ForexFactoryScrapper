@@ -1,0 +1,50 @@
+name: Bug Report
+description: Report a reproducible defect or bug
+title: "fix: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please verify the issue has not been reported before opening a new ticket.
+        For security vulnerability reports, refer to [SECURITY.md](../../SECURITY.md).
+  - type: textarea
+    id: summary
+    attributes:
+      label: Bug Description
+      description: Provide a clear and concise description of the bug.
+      placeholder: Describe what happened.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Step-by-step instructions to reproduce the behavior.
+      placeholder: |
+        1. Run command '...'
+        2. Inspect output '...'
+        3. Observe error '...'
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or Terminal Output
+      description: Paste relevant terminal output or stack traces.
+      render: shell
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS version, Python version, dependency version.
+      placeholder: macOS 15.0 / Ubuntu 22.04, Python 3.11.x, etc.
+    validations:
+      required: true

@@ -53,3 +53,23 @@ jobs:
       - name: Run tests
         run: |
           pytest -q
+
+      - name: Validate Internal Documentation Links
+        run: |
+          python3 -c '
+          import re, glob, os, sys
+          broken = []
+          for f in glob.glob("**/*.md", recursive=True):
+              content = re.sub(r"```[\s\S]*?```", "", open(f, encoding="utf-8").read())
+              content = re.sub(r"`[^`]*`", "", content)
+              for link in re.findall(r"\[.*?\]\((?!https?://|mailto:)(.*?)(?:#.*)?\)", content):
+                  link = link.strip().split("?")[0]
+                  if not link or link.startswith("#"): continue
+                  target = os.path.normpath(os.path.join(os.path.dirname(f), link))
+                  if not os.path.exists(target):
+                      broken.append(f"{f} -> {link}")
+          if broken:
+              print("Broken internal links detected:", broken, file=sys.stderr)
+              sys.exit(1)
+          print("Internal documentation links verified.")
+          '

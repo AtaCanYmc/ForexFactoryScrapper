@@ -1,0 +1,57 @@
+name: Documentation & Governance Gate
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  gate:
+    name: Anti-Slop & Governance Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Verify Essential Governance Files
+        run: |
+          for f in README.md LICENSE CONTRIBUTING.md SECURITY.md ROADMAP.md; do
+            if [ ! -f "$f" ]; then
+              echo "::error file=$f::Missing required governance file: $f"
+              exit 1
+            fi
+          done
+
+      - name: Run Anti-AI-Slop Linter
+        run: |
+          README_FILE="README.md"
+          FORBIDDEN="seamlessly|blazingly fast|cutting-edge|revolutionary|comprehensive and robust|effortlessly"
+          SLOP_MATCHES=$(grep -E -i "$FORBIDDEN" "$README_FILE" | grep -v -E "Strips meaningless|Zero Buzzword" || true)
+          if [ -n "$SLOP_MATCHES" ]; then
+            echo "::error file=$README_FILE::Forbidden marketing buzzwords found in documentation"
+            exit 1
+          fi
+          if grep -q "—" "$README_FILE"; then
+            echo "::error file=$README_FILE::Forbidden long dash (em-dash) detected"
+            exit 1
+          fi
+
+      - name: Validate Codebase Grounding & Links
+        run: |
+          python3 -c '
+          import re, glob, os, sys
+          broken = []
+          for f in glob.glob("**/*.md", recursive=True):
+              content = re.sub(r"```[\s\S]*?```", "", open(f, encoding="utf-8").read())
+              content = re.sub(r"`[^`]*`", "", content)
+              for link in re.findall(r"\[.*?\]\((?!https?://|mailto:)(.*?)(?:#.*)?\)", content):
+                  link = link.strip().split("?")[0]
+                  if not link or link.startswith("#"): continue
+                  target = os.path.normpath(os.path.join(os.path.dirname(f), link))
+                  if not os.path.exists(target):
+                      broken.append(f"{f} -> {link}")
+          if broken:
+              print("Broken links detected:", broken, file=sys.stderr)
+              sys.exit(1)
+          '

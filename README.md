@@ -25,6 +25,7 @@ ForexFactoryScrapper is a Flask REST API service that aggregates and serves econ
 - [Testing and Verification](#testing-and-verification)
 - [Documentation and Developer Commands](#documentation-and-developer-commands)
 - [Frequently Asked Questions](#frequently-asked-questions)
+- [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [Security](#security)
 - [License](#license)
@@ -265,6 +266,10 @@ The API does not maintain an internal database or caching layer. Requests trigge
 
 #### How are invalid dates or parameters handled?
 Parameters are validated before invoking upstream scrapers. Malformed dates, non-integer date components, or negative pagination limits immediately return HTTP 400 with a structured JSON error body: `{"error": "..."}`.
+
+## Roadmap
+
+Active development targets, release schedules, and upcoming features are tracked in [ROADMAP.md](ROADMAP.md).
 
 ## Contributing
 
