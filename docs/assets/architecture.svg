@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="architecture-title architecture-desc" id="architecture-root">
+        <title id="architecture-title">ForexFactoryScrapper System Architecture</title>
+        <desc id="architecture-desc">HTTP requests enter the Flask API layer, pass through route blueprints and parameter validation, delegate HTML parsing to forex-pytory, and scrape four external financial calendar sites.</desc>
+        <defs>
+      <style>@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;family=Noto+Serif:ital@0;1&amp;family=Noto+Sans+KR:wght@400;500;600&amp;family=Noto+Serif+KR:wght@400&amp;family=Noto+Sans+TC:wght@400;500;600&amp;family=Noto+Serif+TC:wght@400&amp;display=swap');
+      #architecture-root { --color-paper:   #f5f5f5;   
+      --color-ink:     #2d3142;   
+      --color-muted:   #4f5d75;   
+      --color-accent:  #bf4520;   
+      --font-sans:     'Geist', system-ui, sans-serif;
+      --font-serif:    'Instrument Serif', 'Noto Serif', 'Noto Serif KR', serif;
+      --font-mono:     'Geist Mono', ui-monospace, monospace; }
+      #architecture-root { font-family: var(--font-sans); color: var(--color-ink); }
+      #architecture-root .diagram-container { width: 100%; overflow-x: auto; }
+      @media print {
+#architecture-root .diagram-container { overflow-x: visible; }
+}</style>
+          <marker id="architecture-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/>
+          </marker>
+          <marker id="architecture-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#bf4520"/>
+          </marker>
+          <marker id="architecture-arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/>
+          </marker>
+        </defs>
+
+        <!-- Background -->
+        <rect width="100%" height="100%" fill="#f5f5f5"/>
+
+        <!-- Zones (drawn before arrows and nodes) -->
+        <g id="zones">
+          <!-- API LAYER zone -->
+          <rect x="280" y="48" width="200" height="316" rx="8"
+                fill="#2d3142" stroke="#2d3142" stroke-width="0.8" fill-opacity="0.02" stroke-opacity="0.10"/>
+          <rect x="292" y="52" width="60" height="12" rx="2" fill="#f5f5f5"/>
+          <text x="322" y="61" fill="#5a6580" font-size="7" font-weight="500"
+                font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.14em">API LAYER</text>
+
+          <!-- UPSTREAM SOURCES zone -->
+          <rect x="784" y="48" width="156" height="396" rx="8"
+                fill="#2d3142" stroke="#2d3142" stroke-width="0.8" fill-opacity="0.02" stroke-opacity="0.10"/>
+          <rect x="796" y="52" width="108" height="12" rx="2" fill="#f5f5f5"/>
+          <text x="850" y="61" fill="#5a6580" font-size="7" font-weight="500"
+                font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.14em">UPSTREAM SOURCES</text>
+        </g>
+
+        <!-- Connectors (drawn before nodes) -->
+        <g id="connectors">
+          <!-- Client -> App -->
+          <line x1="200" y1="116" x2="292" y2="116"
+                stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#architecture-arrow-link)"/>
+          <rect x="220" y="96" width="52" height="12" rx="2" fill="#f5f5f5"/>
+          <text x="246" y="105" fill="#5a6580" font-size="8"
+                font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">HTTP GET</text>
+
+          <!-- App -> Blueprints -->
+          <line x1="380" y1="148" x2="380" y2="184"
+                stroke="#4f5d75" stroke-width="1.2" marker-end="url(#architecture-arrow)"/>
+
+          <!-- Blueprints -> Validation -->
+          <line x1="380" y1="248" x2="380" y2="284"
+                stroke="#4f5d75" stroke-width="1.2" marker-end="url(#architecture-arrow)"/>
+
+          <!-- Validation -> Engine (focal hand-off) -->
+          <path d="M 468,316 H 492 Q 500,316 500,308 V 264 Q 500,256 508,256 H 532"
+                fill="none" stroke="#bf4520" stroke-width="1.2" marker-end="url(#architecture-arrow-accent)"/>
+
+          <!-- Engine -> ForexFactory (fan port 1: y=232) -->
+          <path d="M 684,232 H 700 Q 708,232 708,224 V 128 Q 708,120 716,120 H 796"
+                fill="none" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#architecture-arrow-link)"/>
+          <rect x="720" y="100" width="64" height="12" rx="2" fill="#f5f5f5"/>
+          <text x="752" y="109" fill="#5a6580" font-size="8"
+                font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">SCRAPE HTML</text>
+
+          <!-- Engine -> CryptoCraft (fan port 2: y=248) -->
+          <path d="M 684,248 H 720 Q 728,248 728,240 V 220 Q 728,212 736,212 H 796"
+                fill="none" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#architecture-arrow-link)"/>
+
+          <!-- Engine -> MetalsMine (fan port 3: y=264) -->
+          <path d="M 684,264 H 720 Q 728,264 728,272 V 296 Q 728,304 736,304 H 796"
+                fill="none" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#architecture-arrow-link)"/>
+
+          <!-- Engine -> EnergyExch (fan port 4: y=280) -->
+          <path d="M 684,280 H 700 Q 708,280 708,288 V 388 Q 708,396 716,396 H 796"
+                fill="none" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#architecture-arrow-link)"/>
+        </g>
+
+        <!-- Nodes -->
+        <g id="nodes">
+          <!-- Client / API Consumer / Swagger UI (input) -->
+          <g id="node-client">
+            <rect x="28" y="84" width="172" height="64" rx="6" fill="#f5f5f5"/>
+            <rect x="28" y="84" width="172" height="64" rx="6" fill="#4f5d75" stroke="#5a6580" stroke-width="1" fill-opacity="0.10"/>
+            <rect x="36" y="90" width="40" height="12" rx="2" fill="none" stroke="#5a6580" stroke-width="0.8" stroke-opacity="0.40"/>
+            <text x="56" y="99" fill="#5a6580" font-size="7" font-weight="500"
+                  font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em" fill-opacity="0.85">INPUT</text>
+            <text x="114" y="122" fill="#2d3142" font-size="12" font-weight="600"
+                  font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Client / Swagger UI</text>
+            <text x="114" y="138" fill="#4f5d75" font-size="9"
+                  font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">HTTP GET /api/...</text>
+          </g>
+
+          <!-- Flask Application (backend) -->
+          <g id="node-app">
+            <rect x="292" y="84" width="176" height="64" rx="6" fill="#f5f5f5"/>
+            <rect x="292" y="84" width="176" height="64" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+            <rect x="300" y="90" width="28" height="12" rx="2" fill="none" stroke="#2d3142" stroke-width="0.8" stroke-opacity="0.40"/>
+            <text x="314" y="99" fill="#2d3142" font-size="7" font-weight="500"
+                  font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em" fill-opacity="0.80">APP</text>
+            <text x="380" y="122" fill="#2d3142" font-size="12" font-weight="600"
+                  font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Flask Application</text>
+            <text x="380" y="138" fill="#4f5d75" font-size="9"
+                  font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">src/app.py</text>
+          </g>
+
+          <!-- Route Blueprints (backend) -->
+          <g id="node-blueprints">
+            <rect x="292" y="184" width="176" height="64" rx="6" fill="#f5f5f5"/>
+            <rect x="292" y="184" width="176" height="64" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+            <rect x="300" y="190" width="44" height="12" rx="2" fill="none" stroke="#2d3142" stroke-width="0.8" stroke-opacity="0.40"/>
+            <text x="322" y="199" fill="#2d3142" font-size="7" font-weight="500"
+                  font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em" fill-opacity="0.80">ROUTES</text>
+            <text x="380" y="222" fill="#2d3142" font-size="12" font-weight="600"
+                  font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Route Blueprints</text>
+            <text x="380" y="238" fill="#4f5d75" font-size="9"
+                  font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">src/routes/</text>
+          </g>
+
+          <!-- Parameter & Paging Validator (backend) -->
+          <g id="node-validation">
+            <rect x="292" y="284" width="176" height="64" rx="6" fill="#f5f5f5"/>
+            <rect x="292" y="284" width="176" height="64" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+            <rect x="300" y="290" width="60" height="12" rx="2" fill="none" stroke="#2d3142" stroke-width="0.8" stroke-opacity="0.40"/>
+            <text x="330" y="299" fill="#2d3142" font-size="7" font-weight="500"
+                  font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em" fill-opacity="0.80">VALIDATOR</text>
+            <text x="380" y="322" fill="#2d3142" font-size="12" font-weight="600"
+                  font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Parameter &amp; Paging</text>
+            <text x="380" y="338" fill="#4f5d75" font-size="9"
+                  font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">query · pagination</text>
+          </g>
+
+          <!-- forex-pytory Engine (focal) -->
+          <g id="node-engine">
+            <rect x="532" y="216" width="152" height="80" rx="6" fill="#f5f5f5"/>
+            <rect x="532" y="216" width="152" height="80" rx="6" fill="#bf4520" stroke="#bf4520" stroke-width="1.2" fill-opacity="0.08"/>
+            <rect x="540" y="222" width="44" height="12" rx="2" fill="none" stroke="#bf4520" stroke-width="0.8" stroke-opacity="0.40"/>
+            <text x="562" y="231" fill="#bf4520" font-size="7" font-weight="500"
+                  font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em" fill-opacity="0.90">ENGINE</text>
+            <text x="608" y="260" fill="#2d3142" font-size="12" font-weight="600"
+                  font-family="'Geist', system-ui, sans-serif" text-anchor="middle">forex-pytory</text>
+            <text x="608" y="278" fill="#4f5d75" font-size="9"
+                  font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">parser · Pydantic</text>
+          </g>
+
+          <!-- ForexFactory (external) -->
+          <g id="node-ff">
+            <rect x="796" y="88" width="132" height="64" rx="6" fill="#f5f5f5"/>
+            <rect x="796" y="88" width="132" height="64" rx="6" fill="#2d3142" stroke="#2d3142" stroke-width="1" fill-opacity="0.03" stroke-opacity="0.30"/>
+            <rect x="804" y="94" width="52" height="12" rx="2" fill="none" stroke="#2d3142" stroke-width="0.8" stroke-opacity="0.30"/>
+            <text x="830" y="103" fill="#5a6580" font-size="7" font-weight="500"
+                  font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">EXTERNAL</text>
+            <text x="862" y="126" fill="#2d3142" font-size="12" font-weight="600"
+                  font-family="'Geist', system-ui, sans-serif" text-anchor="middle">ForexFactory</text>
+            <text x="862" y="142" fill="#4f5d75" font-size="9"
+                  font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">forexfactory.com</text>
+          </g>
+
+          <!-- CryptoCraft (external) -->
+          <g id="node-cc">
+            <rect x="796" y="180" width="132" height="64" rx="6" fill="#f5f5f5"/>
+            <rect x="796" y="180" width="132" height="64" rx="6" fill="#2d3142" stroke="#2d3142" stroke-width="1" fill-opacity="0.03" stroke-opacity="0.30"/>
+            <rect x="804" y="186" width="52" height="12" rx="2" fill="none" stroke="#2d3142" stroke-width="0.8" stroke-opacity="0.30"/>
+            <text x="830" y="195" fill="#5a6580" font-size="7" font-weight="500"
+                  font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">EXTERNAL</text>
+            <text x="862" y="218" fill="#2d3142" font-size="12" font-weight="600"
+                  font-family="'Geist', system-ui, sans-serif" text-anchor="middle">CryptoCraft</text>
+            <text x="862" y="234" fill="#4f5d75" font-size="9"
+                  font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">cryptocraft.com</text>
+          </g>
+
+          <!-- MetalsMine (external) -->
+          <g id="node-mm">
+            <rect x="796" y="272" width="132" height="64" rx="6" fill="#f5f5f5"/>
+            <rect x="796" y="272" width="132" height="64" rx="6" fill="#2d3142" stroke="#2d3142" stroke-width="1" fill-opacity="0.03" stroke-opacity="0.30"/>
+            <rect x="804" y="278" width="52" height="12" rx="2" fill="none" stroke="#2d3142" stroke-width="0.8" stroke-opacity="0.30"/>
+            <text x="830" y="287" fill="#5a6580" font-size="7" font-weight="500"
+                  font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">EXTERNAL</text>
+            <text x="862" y="310" fill="#2d3142" font-size="12" font-weight="600"
+                  font-family="'Geist', system-ui, sans-serif" text-anchor="middle">MetalsMine</text>
+            <text x="862" y="326" fill="#4f5d75" font-size="9"
+                  font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">metalsmine.com</text>
+          </g>
+
+          <!-- EnergyExch (external) -->
+          <g id="node-ee">
+            <rect x="796" y="364" width="132" height="64" rx="6" fill="#f5f5f5"/>
+            <rect x="796" y="364" width="132" height="64" rx="6" fill="#2d3142" stroke="#2d3142" stroke-width="1" fill-opacity="0.03" stroke-opacity="0.30"/>
+            <rect x="804" y="370" width="52" height="12" rx="2" fill="none" stroke="#2d3142" stroke-width="0.8" stroke-opacity="0.30"/>
+            <text x="830" y="379" fill="#5a6580" font-size="7" font-weight="500"
+                  font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">EXTERNAL</text>
+            <text x="862" y="402" fill="#2d3142" font-size="12" font-weight="600"
+                  font-family="'Geist', system-ui, sans-serif" text-anchor="middle">EnergyExch</text>
+            <text x="862" y="418" fill="#4f5d75" font-size="9"
+                  font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">energyexch.com</text>
+          </g>
+        </g>
+
+        <!-- Legend strip -->
+        <g id="legend">
+          <line x1="28" y1="536" x2="932" y2="536" stroke="#2d3142" stroke-width="0.8" stroke-opacity="0.10"/>
+          <text x="28" y="556" fill="#4f5d75" font-size="8" font-weight="500"
+                font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.14em">LEGEND</text>
+
+          <!-- Input -->
+          <rect x="28" y="564" width="16" height="12" rx="2" fill="#4f5d75" stroke="#5a6580" stroke-width="1" fill-opacity="0.10"/>
+          <text x="52" y="573" fill="#4f5d75" font-size="8" font-family="'Geist Mono', ui-monospace, monospace">Input</text>
+
+          <!-- API Component -->
+          <rect x="116" y="564" width="16" height="12" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+          <text x="140" y="573" fill="#4f5d75" font-size="8" font-family="'Geist Mono', ui-monospace, monospace">API Component</text>
+
+          <!-- Focal -->
+          <rect x="244" y="564" width="16" height="12" rx="2" fill="#bf4520" stroke="#bf4520" stroke-width="1" fill-opacity="0.08"/>
+          <text x="268" y="573" fill="#4f5d75" font-size="8" font-family="'Geist Mono', ui-monospace, monospace">Parsing Engine (Focal)</text>
+
+          <!-- External -->
+          <rect x="416" y="564" width="16" height="12" rx="2" fill="#2d3142" stroke="#2d3142" stroke-width="1" fill-opacity="0.03" stroke-opacity="0.30"/>
+          <text x="440" y="573" fill="#4f5d75" font-size="8" font-family="'Geist Mono', ui-monospace, monospace">External Site</text>
+
+          <!-- Internal arrow -->
+          <line x1="544" y1="570" x2="568" y2="570" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#architecture-arrow)"/>
+          <text x="576" y="573" fill="#4f5d75" font-size="8" font-family="'Geist Mono', ui-monospace, monospace">Internal</text>
+
+          <!-- Core hand-off arrow -->
+          <line x1="656" y1="570" x2="680" y2="570" stroke="#bf4520" stroke-width="1.2" marker-end="url(#architecture-arrow-accent)"/>
+          <text x="688" y="573" fill="#4f5d75" font-size="8" font-family="'Geist Mono', ui-monospace, monospace">Core Hand-off</text>
+
+          <!-- HTTP / Scrape arrow -->
+          <line x1="792" y1="570" x2="816" y2="570" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#architecture-arrow-link)"/>
+          <text x="824" y="573" fill="#4f5d75" font-size="8" font-family="'Geist Mono', ui-monospace, monospace">HTTP / Scrape</text>
+        </g>
+      </svg>

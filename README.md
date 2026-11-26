@@ -34,17 +34,7 @@ ForexFactoryScrapper is a Flask REST API service that aggregates and serves econ
 
 All HTML extraction and DOM parsing logic is isolated within the upstream [`forex-pytory`](https://github.com/AtaCanYmc/forex-pytory) package. ForexFactoryScrapper acts exclusively as an HTTP API layer responsible for request validation, pagination, CORS handling, and OpenAPI schema generation.
 
-```mermaid
-flowchart TD
-    Client["Client / API Consumer / Swagger UI"] -->|"HTTP GET"| App["Flask Application (src/app.py)"]
-    App --> Blueprints["Route Blueprints (src/routes/)"]
-    Blueprints --> Validation["Parameter & Paging Validator"]
-    Validation --> Engine["forex-pytory (Parsing Engine & Pydantic Models)"]
-    Engine -->|"Scrape HTML"| FF["ForexFactory"]
-    Engine -->|"Scrape HTML"| CC["CryptoCraft"]
-    Engine -->|"Scrape HTML"| MM["MetalsMine"]
-    Engine -->|"Scrape HTML"| EE["EnergyExch"]
-```
+![ForexFactoryScrapper System Architecture](docs/assets/architecture.svg)
 
 ## Quick Start
 

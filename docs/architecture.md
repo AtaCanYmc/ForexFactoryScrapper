@@ -14,14 +14,4 @@ All HTML extraction and DOM parsing is managed upstream by the [`forex-pytory`](
 
 ## Component Flow
 
-```mermaid
-flowchart TD
-    Client["Client / API Consumer / Swagger UI"] -->|"HTTP GET"| App["Flask Application (src/app.py)"]
-    App --> Blueprints["Route Blueprints (src/routes/)"]
-    Blueprints --> Validation["Parameter & Paging Validator"]
-    Validation --> Engine["forex-pytory (Parsing Engine & Pydantic Models)"]
-    Engine -->|"Scrape HTML"| FF["ForexFactory"]
-    Engine -->|"Scrape HTML"| CC["CryptoCraft"]
-    Engine -->|"Scrape HTML"| MM["MetalsMine"]
-    Engine -->|"Scrape HTML"| EE["EnergyExch"]
-```
+![ForexFactoryScrapper System Architecture](assets/architecture.svg)
