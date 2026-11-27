@@ -21,6 +21,8 @@ jobs:
       - name: Verify static site assets
         run: |
           test -f pages/index.html
+          test -f pages/index.css
+          test -f pages/index.js
           test -f pages/robots.txt
           test -f pages/sitemap.xml
           test -f pages/llms.txt
