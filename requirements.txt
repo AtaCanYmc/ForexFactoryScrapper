@@ -7,4 +7,5 @@ pytest~=9.2.0
 python-dotenv~=1.2.4
 pre-commit~=4.6.2; python_version < "3.11"
 pre-commit~=4.7.0; python_version >= "3.11"
-redis~=8.2
+redis~=8.1.0; python_version < "3.11"
+redis~=8.2; python_version >= "3.11"
