@@ -4,5 +4,5 @@ description: >-
   Flask REST API serving economic calendar events from ForexFactory and sister
   portals.
 type: application
-version: 2.2.0
+version: 2.3.0
 appVersion: 2.1.0

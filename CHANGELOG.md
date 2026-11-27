@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0](https://github.com/AtaCanYmc/ForexFactoryScrapper/compare/v2.2.0...v2.3.0) (2026-11-27)
+
+
+### Features
+
+* add explainer video link to documentation and index ([3dbc391](https://github.com/AtaCanYmc/ForexFactoryScrapper/commit/3dbc3919e628bdac0b56938465e4951efae90043))
+
 ## [2.2.0](https://github.com/AtaCanYmc/ForexFactoryScrapper/compare/v2.1.0...v2.2.0) (2026-11-27)
 
 
