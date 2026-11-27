@@ -21,3 +21,19 @@ params:query {
 assert {
   res.status: eq 200
 }
+
+tests {
+  test("paging envelope", function () {
+    expect(res.body.total).to.be.a("number");
+    expect(res.body.results).to.be.an("array");
+    expect(res.body.results.length).to.be.at.most(10);
+  });
+  test("echoes range and sources", function () {
+    expect(res.body.start_date).to.equal("2024-05-01");
+    expect(res.body.end_date).to.equal("2024-05-03");
+    expect(res.body.sources).to.have.members(["forex", "crypto"]);
+  });
+  test("source breakdown present", function () {
+    expect(res.body.source_breakdown).to.have.all.keys("forex", "crypto");
+  });
+}

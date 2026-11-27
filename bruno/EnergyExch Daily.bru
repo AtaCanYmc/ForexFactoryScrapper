@@ -21,3 +21,19 @@ params:query {
 assert {
   res.status: eq 200
 }
+
+tests {
+  test("paging envelope", function () {
+    expect(res.body.total).to.be.a("number");
+    expect(res.body.offset).to.equal(0);
+    expect(res.body.limit).to.equal(5);
+    expect(res.body.results).to.be.an("array");
+  });
+  test("respects limit", function () {
+    expect(res.body.results.length).to.be.at.most(5);
+  });
+  test("security headers set", function () {
+    expect(res.headers["x-content-type-options"]).to.equal("nosniff");
+    expect(res.headers["x-request-id"]).to.be.a("string");
+  });
+}

@@ -1,0 +1,27 @@
+meta {
+  name: Error - Unknown Bundle Source
+  type: http
+  seq: 15
+}
+
+get {
+  url: {{baseUrl}}/api/bundle?start_date=2024-05-01&end_date=2024-05-02&sources=bogus
+  body: none
+  auth: none
+}
+
+params:query {
+  start_date: 2024-05-01
+  end_date: 2024-05-02
+  sources: bogus
+}
+
+assert {
+  res.status: eq 400
+}
+
+tests {
+  test("returns 400 with error message", function () {
+    expect(res.body.error).to.be.a("string");
+  });
+}

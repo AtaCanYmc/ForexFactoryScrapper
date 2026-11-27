@@ -19,3 +19,9 @@ params:query {
 assert {
   res.status: eq 200
 }
+
+tests {
+  test("returns JSON object", function () {
+    expect(res.body).to.be.an("object");
+  });
+}

@@ -17,3 +17,12 @@ params:query {
 assert {
   res.status: eq 200
 }
+
+tests {
+  test("includes probe metrics", function () {
+    expect(res.body.status).to.equal("ok");
+    expect(res.body.upstream).to.have.property("latency_ms");
+    expect(res.body.upstream.reachable).to.be.a("boolean");
+    expect(res.body.memory_mb).to.be.above(0);
+  });
+}

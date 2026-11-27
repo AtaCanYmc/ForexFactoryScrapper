@@ -13,3 +13,13 @@ get {
 assert {
   res.status: eq 200
 }
+
+tests {
+  test("returns success message", function () {
+    expect(res.body.status).to.equal("success");
+  });
+  test("security headers set", function () {
+    expect(res.headers["x-content-type-options"]).to.equal("nosniff");
+    expect(res.headers["x-request-id"]).to.be.a("string");
+  });
+}

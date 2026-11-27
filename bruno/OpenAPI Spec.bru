@@ -13,3 +13,10 @@ get {
 assert {
   res.status: eq 200
 }
+
+tests {
+  test("valid OpenAPI 3 document", function () {
+    expect(res.body.openapi).to.match(/^3\./);
+    expect(res.body.paths).to.have.property("/api/bundle");
+  });
+}

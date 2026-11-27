@@ -13,3 +13,12 @@ get {
 assert {
   res.status: eq 200
 }
+
+tests {
+  test("status is ok", function () {
+    expect(res.body.status).to.equal("ok");
+  });
+  test("no probe metrics by default", function () {
+    expect(res.body).to.not.have.property("upstream");
+  });
+}

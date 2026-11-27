@@ -1,0 +1,28 @@
+meta {
+  name: Error - Invalid Date
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{baseUrl}}/api/forex/daily?day=31&month=2&year=2024
+  body: none
+  auth: none
+}
+
+params:query {
+  day: 31
+  month: 2
+  year: 2024
+}
+
+assert {
+  res.status: eq 400
+}
+
+tests {
+  test("returns 400 with error message", function () {
+    expect(res.body.error).to.be.a("string");
+    expect(res.body.error).to.contain("Invalid calendar date");
+  });
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Error - Limit Too Large
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{baseUrl}}/api/forex/daily?day=1&month=1&year=2024&limit=999999
+  body: none
+  auth: none
+}
+
+params:query {
+  day: 1
+  month: 1
+  year: 2024
+  limit: 999999
+}
+
+assert {
+  res.status: eq 400
+}
+
+tests {
+  test("returns 400 with error message", function () {
+    expect(res.body.error).to.be.a("string");
+  });
+}

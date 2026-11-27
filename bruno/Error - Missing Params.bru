@@ -1,0 +1,22 @@
+meta {
+  name: Error - Missing Params
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/api/forex/daily
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+}
+
+tests {
+  test("returns 400 with error message", function () {
+    expect(res.body.error).to.be.a("string");
+    expect(res.body.error).to.contain("Missing");
+  });
+}
