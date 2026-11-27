@@ -37,7 +37,9 @@ def cached_get_records(scraper, url):
     records = scraper.get_records(url)
     with _cache_lock:
         if len(_cache) >= _int_env("CACHE_MAX_ENTRIES", 256):
-            for k in [k for k, v in _cache.items() if v[0] <= now] or [next(iter(_cache))]:
+            for k in [k for k, v in _cache.items() if v[0] <= now] or [
+                next(iter(_cache))
+            ]:
                 _cache.pop(k, None)
         _cache[key] = (now + ttl, records)
     return records
