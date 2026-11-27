@@ -3,6 +3,7 @@
 > A stateless Flask REST API that aggregates and serves economic calendar events from ForexFactory, CryptoCraft, EnergyExch, and MetalsMine through the upstream `forex-pytory` package.
 
 - Site: https://atacanymc.github.io/ForexFactoryScrapper/
+- Explainer video: https://youtu.be/_nROisUlAeQ
 - Repository: https://github.com/AtaCanYmc/ForexFactoryScrapper
 - Upstream parser: https://github.com/AtaCanYmc/forex-pytory
 - License: MIT
