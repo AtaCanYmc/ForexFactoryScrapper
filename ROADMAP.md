@@ -15,7 +15,7 @@ This document outlines completed milestones and active development targets for F
 ## Implemented, Pending Release
 
 ### v2.1.0 (Performance & Resilience)
-- [x] Optional in-memory caching layer (TTL cache; Redis not implemented) for upstream responses with configurable TTL.
+- [x] Optional in-memory caching layer (TTL cache; Redis backend added in v2.3.0) for upstream responses with configurable TTL.
 - [x] Configurable per-client rate limiting to prevent upstream blocking.
 - [x] Health check probe metrics (upstream reachability latency, memory usage).
 
@@ -24,13 +24,13 @@ This document outlines completed milestones and active development targets for F
 - [x] Structured JSON logging middleware for integration with log aggregators.
 - [x] Helm chart / Kubernetes deployment manifests.
 
-## Planned Milestones
-
 ### v2.3.0 (Observability & Security)
-- [ ] Prometheus `/metrics` endpoint (request count, latency histogram, cache hit ratio, rate-limit rejections).
-- [ ] Optional API key authentication for `/api/*` via `API_KEYS` environment variable.
-- [ ] Redis cache backend selectable with `CACHE_BACKEND=redis`, for sharing cache across replicas (deferred from v2.1.0).
-- [ ] CI job running `helm lint` and `helm template` against `deploy/helm/forexfactory-scrapper`.
+- [x] Prometheus `/metrics` endpoint (request count, latency histogram, cache hit ratio, rate-limit rejections).
+- [x] Optional API key authentication for `/api/*` via `API_KEYS` environment variable.
+- [x] Redis cache backend selectable with `CACHE_BACKEND=redis`, for sharing cache across replicas (deferred from v2.1.0).
+- [x] CI job running `helm lint` and `helm template` against `deploy/helm/forexfactory-scrapper`.
+
+## Planned Milestones
 
 ### v2.4.0 (API Surface & Throughput)
 - [ ] Event filters on daily and bundle endpoints: `currency`, `impact`, and free-text `q`.

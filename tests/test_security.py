@@ -136,3 +136,89 @@ def test_json_logging_format(client, caplog):
     assert line["message"] == "request"
     assert line["path"] == "/api/hello" and line["status"] == 200
     assert line["request_id"] == "rid-1" and "duration_ms" in line
+
+
+def test_api_key_required_when_configured(client, monkeypatch):
+    monkeypatch.setenv("API_KEYS", "k1, k2")
+    assert client.get("/api/hello").status_code == 401
+    assert client.get("/api/hello", headers={"X-API-Key": "bad"}).status_code == 401
+    assert client.get("/api/hello", headers={"X-API-Key": "k2"}).status_code == 200
+    ok = client.get("/api/hello", headers={"Authorization": "Bearer k1"})
+    assert ok.status_code == 200
+    assert client.get("/api/health").status_code == 200
+    assert client.get("/metrics").status_code == 200
+
+
+def test_api_open_without_keys(client, monkeypatch):
+    monkeypatch.delenv("API_KEYS", raising=False)
+    assert client.get("/api/hello").status_code == 200
+
+
+def test_metrics_endpoint_exposes_series(client, monkeypatch):
+    from src import performance
+
+    performance._hits.clear()
+    monkeypatch.setenv("RATE_LIMIT_PER_MINUTE", "1")
+    client.get("/api/hello")
+    assert client.get("/api/hello").status_code == 429
+    body = client.get("/metrics").get_data(as_text=True)
+    assert (
+        'ffs_http_requests_total{method="GET",route="/api/hello",status="200"}' in body
+    )
+    assert "ffs_http_request_duration_seconds_bucket" in body
+    assert "ffs_cache_hit_ratio" in body
+    assert "ffs_rate_limit_rejections_total" in body
+    performance._hits.clear()
+
+
+def test_redis_backend_shares_cache(monkeypatch):
+    from src import performance
+
+    class FakeRedis:
+        store = {}
+
+        def get(self, k):
+            return self.store.get(k)
+
+        def setex(self, k, ttl, v):
+            self.store[k] = v
+
+    class Rec:
+        def model_dump(self, **_):
+            return {"title": "CPI"}
+
+    class Fake:
+        calls = 0
+
+        @staticmethod
+        def get_records(url):
+            Fake.calls += 1
+            return [Rec()]
+
+    monkeypatch.setattr(performance, "_redis_client", FakeRedis())
+    monkeypatch.setenv("CACHE_TTL_SECONDS", "60")
+    monkeypatch.setenv("CACHE_BACKEND", "redis")
+    first = performance.cached_get_records(Fake, "u")
+    second = performance.cached_get_records(Fake, "u")
+    assert Fake.calls == 1
+    assert first[0].model_dump() == second[0].model_dump() == {"title": "CPI"}
+
+
+def test_redis_failure_falls_back_to_upstream(monkeypatch):
+    from src import performance
+
+    class Broken:
+        def get(self, k):
+            raise OSError("down")
+
+        setex = get
+
+    class Fake:
+        @staticmethod
+        def get_records(url):
+            return []
+
+    monkeypatch.setattr(performance, "_redis_client", Broken())
+    monkeypatch.setenv("CACHE_TTL_SECONDS", "60")
+    monkeypatch.setenv("CACHE_BACKEND", "redis")
+    assert performance.cached_get_records(Fake, "u") == []

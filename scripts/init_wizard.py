@@ -11,7 +11,7 @@ import argparse
 import os
 import sys
 
-# (key, prompt, default, type) where type is "int", "bool", "choice:a|b" or "str".
+# (key, prompt, default, type) where type is "int", "bool", "choice:a|b", "str" or "opt" (may be empty).
 SETTINGS = [
     (
         "HOST",
@@ -25,8 +25,16 @@ SETTINGS = [
     ("MAX_BUNDLE_DAYS", "Max days per /api/bundle request", "31", "int"),
     ("MAX_SITEMAP_PAGES", "Max sitemap pages to crawl", "100", "int"),
     ("CACHE_TTL_SECONDS", "Upstream cache TTL in seconds (0 = off)", "0", "int"),
+    ("CACHE_BACKEND", "Cache backend", "memory", "choice:memory|redis"),
+    (
+        "REDIS_URL",
+        "Redis URL (used when backend is redis)",
+        "redis://localhost:6379/0",
+        "str",
+    ),
     ("CACHE_MAX_ENTRIES", "Max cached upstream responses", "256", "int"),
     ("RATE_LIMIT_PER_MINUTE", "Requests per minute per client (0 = off)", "0", "int"),
+    ("API_KEYS", "API keys, comma-separated (empty leaves /api/* open)", "", "opt"),
     ("LOG_FORMAT", "Log format", "text", "choice:text|json"),
     ("LOG_LEVEL", "Log level", "INFO", "choice:DEBUG|INFO|WARNING|ERROR"),
     (
@@ -41,6 +49,8 @@ SETTINGS = [
 def normalize(value, kind):
     """Return the cleaned value, or None if it is invalid for this type."""
     value = value.strip()
+    if kind == "opt":
+        return value
     if kind == "int":
         return str(int(value)) if value.isdigit() else None
     if kind == "bool":

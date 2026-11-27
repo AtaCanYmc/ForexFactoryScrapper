@@ -35,6 +35,7 @@ python main.py
 - `GET /api/metalsmine/daily?day=<1-31>&month=<1-12>&year=<YYYY>&limit=<N>&offset=<N>`: MetalsMine daily calendar events.
 - `GET /api/bundle?start_date=<YYYY-MM-DD>&end_date=<YYYY-MM-DD>&sources=forex,crypto,energy,metal&limit=<N>&offset=<N>`: Multi-source date-range aggregation.
 - `GET /api/forex/sitemaps?start_date=<YYYY-MM-DD>&end_date=<YYYY-MM-DD>&max_pages=<N>&limit=<N>&offset=<N>`: Paginated ForexFactory sitemap URLs.
+- `GET /metrics`: Prometheus metrics.
 - `GET /swagger`: Swagger UI console.
 - `GET /openapi.json`: OpenAPI 3.0 schema definition (`src/openapi_spec.py`).
 
@@ -47,6 +48,8 @@ python main.py
 - `MAX_BUNDLE_DAYS` (Integer, default `31`): Maximum date span for `/api/bundle`.
 - `MAX_SITEMAP_PAGES` (Integer, default `100`): Maximum sitemap pages to crawl.
 - `CACHE_TTL_SECONDS` (Integer, default `0`): In-memory upstream cache TTL, `0` disables.
+- `CACHE_BACKEND` (`memory` or `redis`, default `memory`): Cache backend. `redis` needs `REDIS_URL`.
+- `API_KEYS` (CSV, default empty): When set, `/api/*` requires `X-API-Key` or a Bearer token.
 - `CACHE_MAX_ENTRIES` (Integer, default `256`): Maximum cached responses.
 - `RATE_LIMIT_PER_MINUTE` (Integer, default `0`): Per-client request cap on `/api/*`, `0` disables.
 - `LOG_FORMAT` (`text` or `json`, default `text`): JSON lines for log aggregators.

@@ -97,8 +97,11 @@ Optional: run `python scripts/init_wizard.py` to generate a `.env` interactively
 | `GET` | `/api/metalsmine/daily` | `day`, `month`, `year` | `limit`, `offset` | MetalsMine calendar events for a specific day. |
 | `GET` | `/api/bundle` | `start_date`, `end_date` | `sources`, `limit`, `offset` | Aggregated economic events across selected platforms for a date range. |
 | `GET` | `/api/forex/sitemaps` | None | `start_date`, `end_date`, `max_pages`, `limit`, `offset` | Paginated sitemap URLs retrieved from ForexFactory. |
+| `GET` | `/metrics` | None | None | Prometheus metrics: request count, latency histogram, cache hits, misses and hit ratio, rate-limit rejections. |
 | `GET` | `/swagger` | None | None | Swagger UI documentation console. |
 | `GET` | `/openapi.json` | None | None | Raw OpenAPI 3.0 schema definition. |
+
+Set `API_KEYS` to require a key on `/api/*`. Send it as `X-API-Key: <key>` or `Authorization: Bearer <key>`. A missing or wrong key returns `401`. `/api/health` and `/metrics` stay open for probes and scrapers, so restrict `/metrics` at the proxy or network layer if it should not be public.
 
 ### Daily Events Endpoints
 
@@ -227,6 +230,9 @@ The service reads configuration from environment variables or a local `.env` fil
 | `MAX_SITEMAP_PAGES` | Integer | `100` | No | Maximum allowed pages to crawl for the sitemaps endpoint. |
 | `CACHE_TTL_SECONDS` | Integer | `0` | No | In-memory TTL cache for upstream responses. `0` disables caching. |
 | `CACHE_MAX_ENTRIES` | Integer | `256` | No | Maximum cached upstream responses before eviction. |
+| `CACHE_BACKEND` | String | `memory` | No | `memory` is per process. `redis` shares the cache across replicas and needs `REDIS_URL`. Redis failures fall back to live upstream fetches. |
+| `REDIS_URL` | String | `redis://localhost:6379/0` | No | Redis connection URL, used when `CACHE_BACKEND=redis`. |
+| `API_KEYS` | String | empty | No | Comma-separated keys. When set, `/api/*` requires `X-API-Key: <key>` or `Authorization: Bearer <key>`. `/api/health` and `/metrics` stay open. |
 | `RATE_LIMIT_PER_MINUTE` | Integer | `0` | No | Per-client request cap on `/api/*` (excluding `/api/health`). Exceeding it returns `429` with `Retry-After`. `0` disables. |
 | `LOG_FORMAT` | String | `text` | No | `json` emits one JSON object per line, including a per-request access log. |
 | `LOG_LEVEL` | String | `INFO` | No | Python logging level. |

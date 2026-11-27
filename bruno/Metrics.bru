@@ -1,0 +1,22 @@
+meta {
+  name: Metrics
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{baseUrl}}/metrics
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("exposes prometheus series", function () {
+    expect(res.body).to.contain("ffs_http_requests_total");
+    expect(res.body).to.contain("ffs_cache_hit_ratio");
+  });
+}

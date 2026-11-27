@@ -80,3 +80,25 @@ jobs:
               sys.exit(1)
           print("Internal documentation links verified.")
           '
+
+  helm:
+    name: Helm Chart
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Lint chart
+        run: helm lint deploy/helm/forexfactory-scrapper
+
+      - name: Render chart (defaults)
+        run: helm template ci deploy/helm/forexfactory-scrapper > /dev/null
+
+      - name: Render chart (ingress and TLS)
+        run: |
+          helm template ci deploy/helm/forexfactory-scrapper \
+            --set ingress.enabled=true \
+            --set ingress.tls.enabled=true > /dev/null

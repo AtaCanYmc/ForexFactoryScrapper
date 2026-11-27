@@ -1,5 +1,9 @@
-from flask import g, request
+from flask import g, jsonify, request
+
+from . import metrics
+import hmac
 import logging
+import os
 import time
 from uuid import uuid4
 
@@ -19,8 +23,29 @@ def register_middleware(app):
         g.correlation_id = cid
         g.start = time.monotonic()
 
+    @app.before_request
+    def require_api_key():
+        """API_KEYS (comma-separated) protects /api/*; /api/health stays open for probes."""
+        keys = [k.strip() for k in os.getenv("API_KEYS", "").split(",") if k.strip()]
+        if not keys or not request.path.startswith("/api/"):
+            return None
+        if request.path == "/api/health":
+            return None
+        supplied = request.headers.get("X-API-Key") or request.headers.get(
+            "Authorization", ""
+        ).removeprefix("Bearer ")
+        if any(hmac.compare_digest(supplied, k) for k in keys):
+            return None
+        resp = jsonify({"error": "Missing or invalid API key"})
+        resp.status_code = 401
+        resp.headers["WWW-Authenticate"] = "Bearer"
+        return resp
+
     @app.after_request
     def log_access(response):
+        elapsed = time.monotonic() - getattr(g, "start", time.monotonic())
+        route = request.url_rule.rule if request.url_rule else "unmatched"
+        metrics.observe(request.method, route, response.status_code, elapsed)
         access_log.info(
             "request",
             extra={
