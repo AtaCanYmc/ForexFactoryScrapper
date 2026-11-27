@@ -12,7 +12,7 @@ This document outlines completed milestones and active development targets for F
 - [x] Docker containerization and health probe endpoint (`GET /api/health`).
 - [x] Continuous integration pipeline across Python 3.10, 3.11, and 3.12.
 
-## Planned Milestones
+## Implemented, Pending Release
 
 ### v2.1.0 (Performance & Resilience)
 - [x] Optional in-memory caching layer (TTL cache; Redis not implemented) for upstream responses with configurable TTL.
@@ -23,3 +23,23 @@ This document outlines completed milestones and active development targets for F
 - [x] Production-ready `docker-compose.yml` including reverse proxy and SSL termination.
 - [x] Structured JSON logging middleware for integration with log aggregators.
 - [x] Helm chart / Kubernetes deployment manifests.
+
+## Planned Milestones
+
+### v2.3.0 (Observability & Security)
+- [ ] Prometheus `/metrics` endpoint (request count, latency histogram, cache hit ratio, rate-limit rejections).
+- [ ] Optional API key authentication for `/api/*` via `API_KEYS` environment variable.
+- [ ] Redis cache backend selectable with `CACHE_BACKEND=redis`, for sharing cache across replicas (deferred from v2.1.0).
+- [ ] CI job running `helm lint` and `helm template` against `deploy/helm/forexfactory-scrapper`.
+
+### v2.4.0 (API Surface & Throughput)
+- [ ] Event filters on daily and bundle endpoints: `currency`, `impact`, and free-text `q`.
+- [ ] CSV output via `?format=csv` for spreadsheet and BI imports.
+- [ ] Concurrent per-day fetching in `/api/bundle` with a bounded worker pool.
+- [ ] `ETag` and `Cache-Control` headers with conditional `GET` support.
+- [ ] Retry with exponential backoff for transient upstream failures.
+
+### v3.0.0 (Contract Hardening)
+- [ ] Versioned routes under `/api/v1/` with the unversioned paths kept as deprecated aliases for one minor cycle.
+- [ ] Consistent error envelope (`code`, `message`, `request_id`) across all endpoints.
+- [ ] OpenAPI schema generated from route definitions and verified against responses in CI.
