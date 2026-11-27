@@ -9,6 +9,7 @@ from forex_pytory.core.scraper import (
     energy_exch_scraper,
 )
 
+from ..performance import cached_get_records
 from .common_helpers import (
     _validate_date_range_params,
     _validate_paging_params,
@@ -194,7 +195,7 @@ def _fetch_from_date_range(scraper_module, start_date, end_date):
             year = current_date.year
 
             url = scraper_module.get_url(day, month, year, "day")
-            records = scraper_module.get_records(url)
+            records = cached_get_records(scraper_module, url)
 
             # Convert to dicts
             record_json = [r.model_dump(by_alias=True) for r in records]

@@ -29,3 +29,7 @@ def register_middleware(app):
             "Permissions-Policy", "geolocation=(), microphone=(), camera=()"
         )
         return response
+
+    from .performance import register_rate_limit
+
+    register_rate_limit(app)

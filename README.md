@@ -87,7 +87,7 @@ Interactive documentation interfaces:
 | :--- | :--- | :--- | :--- | :--- |
 | `GET` | `/` | None | None | HTML landing page with quick navigation links. |
 | `GET` | `/api/hello` | None | None | Basic sanity check endpoint. |
-| `GET` | `/api/health` | None | None | Service health check returning operational status. |
+| `GET` | `/api/health` | None | None | Service health check. Add `?probe=true` for upstream latency (ms) and peak memory (MB). |
 | `GET` | `/api/forex/daily` | `day`, `month`, `year` | `limit`, `offset` | ForexFactory economic calendar events for a specific day. |
 | `GET` | `/api/cryptocraft/daily` | `day`, `month`, `year` | `limit`, `offset` | CryptoCraft calendar events for a specific day. |
 | `GET` | `/api/energyexch/daily` | `day`, `month`, `year` | `limit`, `offset` | EnergyExch calendar events for a specific day. |
@@ -222,6 +222,9 @@ The service reads configuration from environment variables or a local `.env` fil
 | `CORS_ORIGINS` | Comma-separated | `*` | No | Allowed CORS origin URLs. |
 | `MAX_BUNDLE_DAYS` | Integer | `31` | No | Maximum allowed date span for the multi-source bundle endpoint. |
 | `MAX_SITEMAP_PAGES` | Integer | `100` | No | Maximum allowed pages to crawl for the sitemaps endpoint. |
+| `CACHE_TTL_SECONDS` | Integer | `0` | No | In-memory TTL cache for upstream responses. `0` disables caching. |
+| `CACHE_MAX_ENTRIES` | Integer | `256` | No | Maximum cached upstream responses before eviction. |
+| `RATE_LIMIT_PER_MINUTE` | Integer | `0` | No | Per-client request cap on `/api/*` (excluding `/api/health`). Exceeding it returns `429` with `Retry-After`. `0` disables. |
 | `DOTENV_PATH` | String (Path) | None | No | Explicit file path to load environment variables from. |
 
 ## Testing and Verification

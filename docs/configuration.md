@@ -12,6 +12,9 @@ ForexFactoryScrapper loads settings through system environment variables or a lo
 | `CORS_ORIGINS` | Comma-separated | `*` | No | Allowed CORS origin URLs. |
 | `MAX_BUNDLE_DAYS` | Integer | `31` | No | Maximum allowed date span for the multi-source bundle endpoint. |
 | `MAX_SITEMAP_PAGES` | Integer | `100` | No | Maximum allowed pages to crawl for the sitemaps endpoint. |
+| `CACHE_TTL_SECONDS` | Integer | `0` | No | In-memory TTL cache for upstream responses. `0` disables caching. |
+| `CACHE_MAX_ENTRIES` | Integer | `256` | No | Maximum cached upstream responses before eviction. |
+| `RATE_LIMIT_PER_MINUTE` | Integer | `0` | No | Per-client request cap on `/api/*` (excluding `/api/health`). Exceeding it returns `429` with `Retry-After`. `0` disables. |
 | `DOTENV_PATH` | String (Path) | None | No | Explicit file path to load environment variables from. |
 
 ## Example Configuration

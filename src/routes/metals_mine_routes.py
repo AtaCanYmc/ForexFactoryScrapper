@@ -3,6 +3,7 @@ from flask import Blueprint, jsonify, request
 
 from forex_pytory.core.scraper import metals_mine_scraper
 
+from ..performance import cached_get_records
 from .common_helpers import (
     _validate_date_params,
     _validate_paging_params,
@@ -36,7 +37,7 @@ def metalsmine_daily():
         url = metals_mine_scraper.get_url(
             day=day_i, month=month_i, year=year_i, timeline="day"
         )
-        records = metals_mine_scraper.get_records(url)
+        records = cached_get_records(metals_mine_scraper, url)
     except Exception as e:
         logger.exception(f"Failed to fetch or parse metalsmine records: {e}")
         return jsonify({"error": "Failed to fetch data"}), 500

@@ -62,3 +62,49 @@ def test_sitemap_max_pages_bounds(client):
     # Excessively large
     res_large = client.get("/api/forex/sitemaps?max_pages=99999")
     assert res_large.status_code == 400
+
+
+def test_rate_limit_returns_429(client, monkeypatch):
+    from src import performance
+
+    performance._hits.clear()
+    monkeypatch.setenv("RATE_LIMIT_PER_MINUTE", "2")
+    codes = [client.get("/api/hello").status_code for _ in range(3)]
+    assert codes == [200, 200, 429]
+    assert client.get("/api/health").status_code == 200
+    performance._hits.clear()
+
+
+def test_cache_reuses_upstream_call(monkeypatch):
+    from src import performance
+
+    class Fake:
+        calls = 0
+
+        @staticmethod
+        def get_records(url):
+            Fake.calls += 1
+            return [url]
+
+    performance._cache.clear()
+    monkeypatch.setenv("CACHE_TTL_SECONDS", "60")
+    performance.cached_get_records(Fake, "u")
+    performance.cached_get_records(Fake, "u")
+    assert Fake.calls == 1
+    monkeypatch.setenv("CACHE_TTL_SECONDS", "0")
+    performance.cached_get_records(Fake, "u")
+    assert Fake.calls == 2
+    performance._cache.clear()
+
+
+def test_health_probe_metrics(client, monkeypatch):
+    from src import performance
+
+    monkeypatch.setattr(
+        performance, "probe_metrics", lambda: {"upstream": {}, "memory_mb": 1.0}
+    )
+    import src.routes.helper_routes as h
+
+    monkeypatch.setattr(h, "probe_metrics", performance.probe_metrics)
+    data = client.get("/api/health?probe=true").get_json()
+    assert data["status"] == "ok" and "memory_mb" in data

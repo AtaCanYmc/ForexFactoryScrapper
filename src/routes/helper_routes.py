@@ -1,5 +1,6 @@
 import logging
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
+from ..performance import probe_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -13,5 +14,8 @@ def hello():
 
 @helper_bp.route("/api/health", methods=["GET"])
 def health():
-    """Health endpoint for quick liveness check."""
-    return jsonify({"status": "ok"}), 200
+    """Liveness check. Add ?probe=true for upstream latency and memory metrics."""
+    body = {"status": "ok"}
+    if request.args.get("probe", "").lower() in ("1", "true"):
+        body.update(probe_metrics())
+    return jsonify(body), 200

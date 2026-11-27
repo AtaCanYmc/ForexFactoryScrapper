@@ -3,6 +3,7 @@ from flask import Blueprint, jsonify, request
 
 from forex_pytory.core.scraper import crypto_craft_scraper
 
+from ..performance import cached_get_records
 from .common_helpers import (
     _validate_date_params,
     _validate_paging_params,
@@ -36,7 +37,7 @@ def cryptocraft_daily():
         url = crypto_craft_scraper.get_url(
             day=day_i, month=month_i, year=year_i, timeline="day"
         )
-        records = crypto_craft_scraper.get_records(url)
+        records = cached_get_records(crypto_craft_scraper, url)
     except Exception as e:
         logger.exception(f"Failed to fetch or parse cryptocraft records: {e}")
         return jsonify({"error": "Failed to fetch data"}), 500

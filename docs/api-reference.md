@@ -8,7 +8,7 @@ This document outlines all public endpoints, parameter constraints, and schema s
 | :--- | :--- | :--- | :--- | :--- |
 | `GET` | `/` | None | None | HTML landing page with quick navigation links. |
 | `GET` | `/api/hello` | None | None | Basic sanity check endpoint. |
-| `GET` | `/api/health` | None | None | Service health check returning operational status. |
+| `GET` | `/api/health` | None | None | Service health check. Add `?probe=true` for upstream latency (ms) and peak memory (MB). |
 | `GET` | `/api/forex/daily` | `day`, `month`, `year` | `limit`, `offset` | ForexFactory economic calendar events for a specific day. |
 | `GET` | `/api/cryptocraft/daily` | `day`, `month`, `year` | `limit`, `offset` | CryptoCraft calendar events for a specific day. |
 | `GET` | `/api/energyexch/daily` | `day`, `month`, `year` | `limit`, `offset` | EnergyExch calendar events for a specific day. |

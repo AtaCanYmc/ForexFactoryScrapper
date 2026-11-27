@@ -15,9 +15,9 @@ This document outlines completed milestones and active development targets for F
 ## Planned Milestones
 
 ### v2.1.0 (Performance & Resilience)
-- [ ] Optional in-memory caching layer (Redis or TTLCache) for upstream responses with configurable TTL.
-- [ ] Configurable per-client rate limiting to prevent upstream blocking.
-- [ ] Health check probe metrics (upstream reachability latency, memory usage).
+- [x] Optional in-memory caching layer (TTL cache; Redis not implemented) for upstream responses with configurable TTL.
+- [x] Configurable per-client rate limiting to prevent upstream blocking.
+- [x] Health check probe metrics (upstream reachability latency, memory usage).
 
 ### v2.2.0 (Operations & Deployment)
 - [ ] Production-ready `docker-compose.yml` including reverse proxy and SSL termination.
