@@ -1,45 +1,50 @@
 # Roadmap
 
-This document outlines completed milestones and active development targets for ForexFactoryScrapper. Milestones are organized by version tags.
+This file tracks capability scope, not release tags. Release Please assigns version numbers from Conventional Commits and keeps `version.txt`, the Helm chart, and `src/openapi_spec.py` in sync.
 
-## Current Release
+Current stable release: `2.1.0`.
 
-### v2.0.0
-- [x] Multi-source economic calendar aggregation (ForexFactory, CryptoCraft, EnergyExch, MetalsMine).
-- [x] Date-range multi-source bundle endpoint (`GET /api/bundle`).
-- [x] Sitemap index discovery endpoint (`GET /api/forex/sitemaps`).
-- [x] Interactive OpenAPI 3.0 schema and Swagger UI documentation (`GET /swagger`, `GET /openapi.json`).
-- [x] Docker containerization and health probe endpoint (`GET /api/health`).
-- [x] Continuous integration pipeline across Python 3.10, 3.11, and 3.12.
+## Shipped in 2.1.0
 
-## Implemented, Pending Release
+### Data and API
 
-### v2.1.0 (Performance & Resilience)
-- [x] Optional in-memory caching layer (TTL cache; Redis backend added in v2.3.0) for upstream responses with configurable TTL.
-- [x] Configurable per-client rate limiting to prevent upstream blocking.
-- [x] Health check probe metrics (upstream reachability latency, memory usage).
+- [x] Multi-source economic calendar aggregation for ForexFactory, CryptoCraft, EnergyExch, and MetalsMine.
+- [x] Date-range bundle endpoint at `GET /api/bundle` with a per-source breakdown.
+- [x] Sitemap discovery endpoint at `GET /api/forex/sitemaps`.
+- [x] Per-source daily endpoints with `limit` and `offset` pagination.
+- [x] Date, source, and pagination validation before any upstream call.
+- [x] OpenAPI 3.0.0 document, Swagger UI at `/swagger`, and `/openapi.json`.
+- [x] Optional API key authentication on `/api/*` with `X-API-Key` or `Authorization: Bearer`.
+- [x] CORS configuration, security headers, and `X-Request-ID` correlation.
+- [x] Bruno collection with offline contract assertions for success and error paths.
 
-### v2.2.0 (Operations & Deployment)
-- [x] Production-ready `docker-compose.yml` including reverse proxy and SSL termination.
-- [x] Structured JSON logging middleware for integration with log aggregators.
-- [x] Helm chart / Kubernetes deployment manifests.
+### Resilience and operations
 
-### v2.3.0 (Observability & Security)
-- [x] Prometheus `/metrics` endpoint (request count, latency histogram, cache hit ratio, rate-limit rejections).
-- [x] Optional API key authentication for `/api/*` via `API_KEYS` environment variable.
-- [x] Redis cache backend selectable with `CACHE_BACKEND=redis`, for sharing cache across replicas (deferred from v2.1.0).
-- [x] CI job running `helm lint` and `helm template` against `deploy/helm/forexfactory-scrapper`.
+- [x] TTL cache with a per-process memory backend and a shared Redis backend.
+- [x] Per-client sliding-window rate limit with `Retry-After`.
+- [x] Health endpoint with optional upstream latency and process memory probe.
+- [x] Prometheus `/metrics` with request counters, latency histogram, cache hit ratio, and rate-limit rejections.
+- [x] JSON access logs and trusted proxy hop support.
+- [x] Non-root Docker image, Docker Compose with Caddy TLS, and a Helm chart.
+- [x] CI on Python 3.10, 3.11, and 3.12 with lint, bandit, pytest, Helm lint and render, and offline Bruno requests.
+- [x] Documentation and governance gate for required files, README wording, and internal links.
 
-## Planned Milestones
+## Planned
 
-### v2.4.0 (API Surface & Throughput)
+### 2.4.0: API surface and throughput
+
 - [ ] Event filters on daily and bundle endpoints: `currency`, `impact`, and free-text `q`.
-- [ ] CSV output via `?format=csv` for spreadsheet and BI imports.
+- [ ] CSV output via `?format=csv`.
 - [ ] Concurrent per-day fetching in `/api/bundle` with a bounded worker pool.
 - [ ] `ETag` and `Cache-Control` headers with conditional `GET` support.
 - [ ] Retry with exponential backoff for transient upstream failures.
 
-### v3.0.0 (Contract Hardening)
-- [ ] Versioned routes under `/api/v1/` with the unversioned paths kept as deprecated aliases for one minor cycle.
-- [ ] Consistent error envelope (`code`, `message`, `request_id`) across all endpoints.
+### 3.0.0: Contract hardening
+
+- [ ] Versioned routes under `/api/v1/`, with unversioned paths kept as deprecated aliases for one minor cycle.
+- [ ] Consistent error envelope with `code`, `message`, and `request_id` across every endpoint.
 - [ ] OpenAPI schema generated from route definitions and verified against responses in CI.
+
+## Ordering
+
+Security fixes and upstream parser breakage come first. Contract stability and observability come next. New API surface follows. Items move into a release when the implementation, tests, and OpenAPI document land together.

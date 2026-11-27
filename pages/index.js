@@ -146,7 +146,8 @@ function runSimulation() {
 
   if (ep === "health") {
     url += "/api/health";
-    payload = { status: "healthy", service: "ForexFactoryScrapper", upstream: "forex-pytory" };
+    // Mirrors src/routes/helper_routes.py: probe metrics are opt-in.
+    payload = { status: "ok" };
   } else if (ep === "bundle") {
     const startDate = document.getElementById("sim-start-date").value || "2026-05-20";
     const endDate = document.getElementById("sim-end-date").value || "2026-05-21";
