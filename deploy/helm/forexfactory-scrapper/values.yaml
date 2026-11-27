@@ -1,0 +1,36 @@
+image:
+  repository: forexfactory-scrapper
+  tag: ""            # defaults to Chart.appVersion
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+# Rendered into the container environment. Keys match .env.example.
+env:
+  LOG_FORMAT: json
+  CACHE_TTL_SECONDS: "300"
+  RATE_LIMIT_PER_MINUTE: "60"
+  CORS_ORIGINS: "*"
+
+# Hops of trusted proxies in front of the pod (ingress controller = 1).
+trustProxyHops: 1
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: ""
+  host: api.example.com
+  tls:
+    enabled: false
+    secretName: forexfactory-scrapper-tls
+  annotations: {}
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    memory: 256Mi

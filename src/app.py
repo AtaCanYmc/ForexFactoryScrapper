@@ -30,10 +30,19 @@ allowed_origins = (
     if cors_origins_env
     else "*"
 )
+# Behind a reverse proxy, trust N forwarded hops so request.remote_addr is the client.
+proxy_hops = int(os.getenv("TRUST_PROXY_HOPS", "0") or 0)
+if proxy_hops > 0:
+    from werkzeug.middleware.proxy_fix import ProxyFix
+
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=proxy_hops, x_proto=proxy_hops)
+
 CORS(app, resources={r"/*": {"origins": allowed_origins}})
 
 # Configure basic logging
-logging.basicConfig(level=logging.INFO)
+from .logging_config import configure_logging  # noqa: E402
+
+configure_logging()
 logger = logging.getLogger(__name__)
 
 

@@ -121,3 +121,18 @@ def test_probe_metrics_upstream_unreachable(monkeypatch):
     assert out["upstream"]["reachable"] is False
     assert out["upstream"]["error"] == "OSError"
     assert out["memory_mb"] > 0
+
+
+def test_json_logging_format(client, caplog):
+    import json
+    import logging
+
+    from src.logging_config import JsonFormatter
+
+    with caplog.at_level(logging.INFO, logger="access"):
+        client.get("/api/hello", headers={"X-Request-ID": "rid-1"})
+    rec = next(r for r in caplog.records if r.name == "access")
+    line = json.loads(JsonFormatter().format(rec))
+    assert line["message"] == "request"
+    assert line["path"] == "/api/hello" and line["status"] == 200
+    assert line["request_id"] == "rid-1" and "duration_ms" in line

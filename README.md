@@ -25,6 +25,7 @@ ForexFactoryScrapper is a Flask REST API service that aggregates and serves econ
   - [Sitemap Endpoint](#sitemap-endpoint)
   - [OpenAPI and Swagger UI](#openapi-and-swagger-ui)
 - [Configuration](#configuration)
+- [Deployment](#deployment)
 - [Testing and Verification](#testing-and-verification)
 - [Documentation and Developer Commands](#documentation-and-developer-commands)
 - [Frequently Asked Questions](#frequently-asked-questions)
@@ -225,7 +226,33 @@ The service reads configuration from environment variables or a local `.env` fil
 | `CACHE_TTL_SECONDS` | Integer | `0` | No | In-memory TTL cache for upstream responses. `0` disables caching. |
 | `CACHE_MAX_ENTRIES` | Integer | `256` | No | Maximum cached upstream responses before eviction. |
 | `RATE_LIMIT_PER_MINUTE` | Integer | `0` | No | Per-client request cap on `/api/*` (excluding `/api/health`). Exceeding it returns `429` with `Retry-After`. `0` disables. |
+| `LOG_FORMAT` | String | `text` | No | `json` emits one JSON object per line, including a per-request access log. |
+| `LOG_LEVEL` | String | `INFO` | No | Python logging level. |
+| `TRUST_PROXY_HOPS` | Integer | `0` | No | Trusted reverse-proxy hops. Set `1` behind Caddy or an ingress so rate limiting sees the real client IP. |
 | `DOTENV_PATH` | String (Path) | None | No | Explicit file path to load environment variables from. |
+
+## Deployment
+
+### Docker Compose with TLS
+
+`docker-compose.yml` runs the app behind a Caddy reverse proxy that terminates TLS. Caddy obtains and renews Let's Encrypt certificates for a public `DOMAIN`, and uses an internal certificate for `localhost`. Ports 80 and 443 must reach the host.
+
+```bash
+DOMAIN=api.example.com docker compose up -d
+curl -f https://api.example.com/api/health
+```
+
+### Kubernetes (Helm)
+
+The chart in `deploy/helm/forexfactory-scrapper` deploys the service with health probes, a non-root read-only container, and an optional Ingress.
+
+```bash
+helm install ffs deploy/helm/forexfactory-scrapper \
+  --set image.repository=<your-registry>/forexfactory-scrapper \
+  --set ingress.enabled=true --set ingress.host=api.example.com --set ingress.tls.enabled=true
+```
+
+Chart values for `env`, `trustProxyHops`, `resources`, and `ingress` are documented in `values.yaml`.
 
 ## Testing and Verification
 

@@ -1,5 +1,9 @@
 from flask import g, request
+import logging
+import time
 from uuid import uuid4
+
+access_log = logging.getLogger("access")
 
 
 def register_middleware(app):
@@ -13,6 +17,24 @@ def register_middleware(app):
     def set_correlation_id():
         cid = request.headers.get("X-Request-ID") or uuid4().hex
         g.correlation_id = cid
+        g.start = time.monotonic()
+
+    @app.after_request
+    def log_access(response):
+        access_log.info(
+            "request",
+            extra={
+                "method": request.method,
+                "path": request.path,
+                "status": response.status_code,
+                "duration_ms": round(
+                    (time.monotonic() - getattr(g, "start", time.monotonic())) * 1000, 1
+                ),
+                "request_id": getattr(g, "correlation_id", None),
+                "client": request.remote_addr,
+            },
+        )
+        return response
 
     @app.after_request
     def add_security_headers(response):

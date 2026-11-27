@@ -20,6 +20,6 @@ This document outlines completed milestones and active development targets for F
 - [x] Health check probe metrics (upstream reachability latency, memory usage).
 
 ### v2.2.0 (Operations & Deployment)
-- [ ] Production-ready `docker-compose.yml` including reverse proxy and SSL termination.
-- [ ] Structured JSON logging middleware for integration with log aggregators.
-- [ ] Helm chart / Kubernetes deployment manifests.
+- [x] Production-ready `docker-compose.yml` including reverse proxy and SSL termination.
+- [x] Structured JSON logging middleware for integration with log aggregators.
+- [x] Helm chart / Kubernetes deployment manifests.
