@@ -1,4 +1,4 @@
-name: Documentation
+name: GitHub Pages
 
 on:
   push:
@@ -16,19 +16,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: 3.x
-
-      - name: Install documentation dependencies
-        run: pip install -r requirements-docs.txt
-
-      - name: Build documentation
-        run: mkdocs build --strict
+      - name: Verify static site assets
+        run: |
+          test -f pages/index.html
+          test -f pages/robots.txt
+          test -f pages/sitemap.xml
+          test -f pages/llms.txt
+          test -f pages/assets/banner.jpg
+          test -f pages/assets/architecture.svg
 
       - name: Deploy to GitHub Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: mkdocs gh-deploy --force
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./pages
+          publish_branch: gh-pages
+          force_orphan: true

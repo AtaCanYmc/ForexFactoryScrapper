@@ -1,0 +1,54 @@
+# ForexFactoryScrapper
+
+> A stateless Flask REST API service that aggregates and serves economic calendar events from ForexFactory, CryptoCraft, EnergyExch, and MetalsMine, powered by the upstream `forex-pytory` Python package.
+
+- Site: https://atacanymc.github.io/ForexFactoryScrapper/
+- Repository: https://github.com/AtaCanYmc/ForexFactoryScrapper
+- Upstream Parser: https://github.com/AtaCanYmc/forex-pytory
+- License: MIT
+
+## Quick Start
+
+### Docker
+```bash
+docker build -t forexfactory-scrapper .
+docker run -d -p 5000:5000 --name forexfactory-scrapper forexfactory-scrapper
+curl -f http://localhost:5000/api/health
+```
+
+### Local (Python 3.10–3.12)
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python main.py
+```
+
+## HTTP Endpoints
+
+- `GET /`: HTML landing page with navigation links.
+- `GET /api/hello`: Basic sanity check endpoint.
+- `GET /api/health`: Service health check returning operational status.
+- `GET /api/forex/daily?day=<1-31>&month=<1-12>&year=<YYYY>&limit=<N>&offset=<N>`: ForexFactory daily economic calendar events.
+- `GET /api/cryptocraft/daily?day=<1-31>&month=<1-12>&year=<YYYY>&limit=<N>&offset=<N>`: CryptoCraft daily calendar events.
+- `GET /api/energyexch/daily?day=<1-31>&month=<1-12>&year=<YYYY>&limit=<N>&offset=<N>`: EnergyExch daily calendar events.
+- `GET /api/metalsmine/daily?day=<1-31>&month=<1-12>&year=<YYYY>&limit=<N>&offset=<N>`: MetalsMine daily calendar events.
+- `GET /api/bundle?start_date=<YYYY-MM-DD>&end_date=<YYYY-MM-DD>&sources=forex,crypto,energy,metal&limit=<N>&offset=<N>`: Multi-source date-range aggregation.
+- `GET /api/forex/sitemaps?start_date=<YYYY-MM-DD>&end_date=<YYYY-MM-DD>&max_pages=<N>&limit=<N>&offset=<N>`: Paginated ForexFactory sitemap URLs.
+- `GET /swagger`: Swagger UI console.
+- `GET /openapi.json`: OpenAPI 3.0 schema definition (`src/openapi_spec.py`).
+
+## Environment Variables
+
+- `HOST` (String, default `127.0.0.1`, `0.0.0.0` in Docker): Bind interface.
+- `PORT` (Integer, default `5000`): HTTP port.
+- `DEBUG` (Boolean, default `False`): Flask debug mode.
+- `CORS_ORIGINS` (CSV, default `*`): Allowed CORS origins.
+- `MAX_BUNDLE_DAYS` (Integer, default `31`): Maximum date span for `/api/bundle`.
+- `MAX_SITEMAP_PAGES` (Integer, default `100`): Maximum sitemap pages to crawl.
+- `DOTENV_PATH` (Path, default `None`): Explicit `.env` file path.
+
+## Architecture Notes
+
+- Stateless HTTP layer: no internal database or caching layer; requests trigger live upstream fetches via `forex-pytory`.
+- Strict validation: invalid dates or negative pagination values return `HTTP 400` with `{"error": "..."}`.
