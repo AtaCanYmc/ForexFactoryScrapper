@@ -3,7 +3,7 @@
 # ForexFactoryScrapper
 
 [![CI](https://github.com/AtaCanYmc/ForexFactoryScrapper/actions/workflows/ci.yml/badge.svg)](https://github.com/AtaCanYmc/ForexFactoryScrapper/actions)
-[![Docs](https://img.shields.io/badge/docs-mkdocs--material-blue.svg)](https://atacanymc.github.io/ForexFactoryScrapper/)
+[![Docs](https://img.shields.io/badge/docs-github--pages-blue.svg)](https://atacanymc.github.io/ForexFactoryScrapper/)
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/)
 [![Release](https://img.shields.io/github/v/release/AtaCanYmc/ForexFactoryScrapper)](https://github.com/AtaCanYmc/ForexFactoryScrapper/releases)
 [![Last Commit](https://img.shields.io/github/last-commit/AtaCanYmc/ForexFactoryScrapper)](https://github.com/AtaCanYmc/ForexFactoryScrapper/commits/main)
@@ -239,9 +239,9 @@ Test files are located under `tests/`: `test_app.py` covers routes and `test_sec
 
 ## Documentation and Developer Commands
 
-Two documentation sites are published by `.github/workflows/docs.yml`: the MkDocs site built from `docs/`, and the static landing page in `pages/` (`index.html`, `index.css`, `index.js`, `llms.txt`, `robots.txt`, `sitemap.xml`).
+The static landing page in `pages/` is published to GitHub Pages by `.github/workflows/docs.yml` (`index.html`, `index.css`, `index.js`, `llms.txt`, `robots.txt`, `sitemap.xml`).
 
-A `Makefile` is provided to streamline local development, testing, and documentation generation:
+A `Makefile` is provided to streamline local development and testing:
 
 | Command | Description |
 | :--- | :--- |
@@ -252,9 +252,6 @@ A `Makefile` is provided to streamline local development, testing, and documenta
 | `make format` | Auto-format Python files with black. |
 | `make docker-build` | Build the container image. |
 | `make docker-run` | Run the containerized service. |
-| `make docs-install` | Install MkDocs Material toolchain. |
-| `make docs-serve` | Start MkDocs local preview server on `127.0.0.1:8000`. |
-| `make docs-build` | Compile static documentation site to `site/`. |
 | `make clean` | Clean pycache and temporary build artifacts. |
 
 ## Frequently Asked Questions

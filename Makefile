@@ -1,4 +1,4 @@
-.PHONY: help install run test lint format docker-build docker-run docs-install docs-serve docs-build clean
+.PHONY: help install run test lint format docker-build docker-run clean
 
 PYTHON ?= python3
 PIP ?= pip
@@ -12,9 +12,6 @@ help:
 	@echo "  make format       Auto-format codebase with black"
 	@echo "  make docker-build Build Docker image"
 	@echo "  make docker-run   Run Docker container"
-	@echo "  make docs-install Install MkDocs documentation dependencies"
-	@echo "  make docs-serve   Run MkDocs development server"
-	@echo "  make docs-build   Build static HTML documentation"
 	@echo "  make clean        Remove cache and temporary build artifacts"
 
 install:
@@ -38,15 +35,6 @@ docker-build:
 
 docker-run:
 	docker run -d -p 5000:5000 --name forexfactory-scrapper forexfactory-scrapper
-
-docs-install:
-	$(PIP) install -r requirements-docs.txt
-
-docs-serve:
-	mkdocs serve
-
-docs-build:
-	mkdocs build --strict
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
