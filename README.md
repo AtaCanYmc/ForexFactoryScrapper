@@ -296,7 +296,7 @@ A `Makefile` is provided to streamline local development and testing:
 Separating the scraper into `forex-pytory` establishes distinct boundaries between HTTP presentation and HTML parsing. If target sites modify their HTML DOM, parser updates occur exclusively in `forex-pytory` without requiring redeployment or changes to the API routing layer.
 
 #### Does this service cache calendar responses?
-The API does not maintain an internal database or caching layer. Requests trigger live upstream fetches through `forex-pytory`. Upstream rate limits apply based on calling IP frequency.
+The API has no database. By default every request triggers a live upstream fetch through `forex-pytory`. Set `CACHE_TTL_SECONDS` to reuse upstream responses from an in-process cache, and `RATE_LIMIT_PER_MINUTE` to cap each client so upstream portals do not block the service IP.
 
 #### How are invalid dates or parameters handled?
 Parameters are validated before invoking upstream scrapers. Malformed dates, non-integer date components, or negative pagination limits immediately return HTTP 400 with a structured JSON error body: `{"error": "..."}`.

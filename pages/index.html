@@ -60,7 +60,7 @@
             "name": "Why is the scraping engine separated into forex-pytory?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Separating the scraper into forex-pytory keeps HTTP presentation decoupled from HTML parsing. When target portals change their DOM, parser updates ship in forex-pytory without altering the API routing layer. The service maintains no internal database or cache; requests trigger live upstream fetches, and upstream rate limits apply per calling IP."
+              "text": "Separating the scraper into forex-pytory keeps HTTP presentation decoupled from HTML parsing. When target portals change their DOM, parser updates ship in forex-pytory without altering the API routing layer. The service has no database. Requests trigger live upstream fetches unless the optional in-process cache (CACHE_TTL_SECONDS) is enabled, and RATE_LIMIT_PER_MINUTE caps each client."
             }
           },
           {
@@ -621,7 +621,7 @@ python main.py</code></pre>
             <summary>Why is the scraping engine separated into forex-pytory?</summary>
             <div class="accordion-body">
               <p>Separating the scraper into <code>forex-pytory</code> keeps HTTP presentation decoupled from HTML parsing. When target portals change their DOM, parser updates ship in <code>forex-pytory</code> without altering the API routing layer.</p>
-              <p>The service maintains no internal database or cache; requests trigger live upstream fetches, and upstream rate limits apply per calling IP.</p>
+              <p>The service has no database. Requests trigger live upstream fetches unless the optional in-process cache (CACHE_TTL_SECONDS) is enabled, and RATE_LIMIT_PER_MINUTE caps each client.</p>
             </div>
           </details>
 

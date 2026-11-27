@@ -6,6 +6,7 @@ The following table lists active support windows for ForexFactoryScrapper releas
 
 | Version | Supported |
 | :--- | :---: |
+| 2.1.x | Yes |
 | 2.0.x | Yes |
 | 1.1.x | Yes |
 | < 1.1 | No |

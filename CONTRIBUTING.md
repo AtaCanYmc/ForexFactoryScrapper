@@ -60,7 +60,12 @@ Add endpoint and pagination unit tests for cryptocraft daily events.
    python -m pytest -q
    ```
 
-3. Run the development server:
+3. Run lint, the bandit scan, and tests together (mirrors CI):
+   ```bash
+   make install-dev && make check
+   ```
+
+4. Run the development server:
    ```bash
    python main.py
    ```

@@ -28,7 +28,7 @@ python main.py
 
 - `GET /`: HTML landing page with navigation links.
 - `GET /api/hello`: Basic sanity check endpoint.
-- `GET /api/health`: Service health check returning operational status.
+- `GET /api/health`: Service health check. Add `?probe=true` for upstream latency and peak memory.
 - `GET /api/forex/daily?day=<1-31>&month=<1-12>&year=<YYYY>&limit=<N>&offset=<N>`: ForexFactory daily economic calendar events.
 - `GET /api/cryptocraft/daily?day=<1-31>&month=<1-12>&year=<YYYY>&limit=<N>&offset=<N>`: CryptoCraft daily calendar events.
 - `GET /api/energyexch/daily?day=<1-31>&month=<1-12>&year=<YYYY>&limit=<N>&offset=<N>`: EnergyExch daily calendar events.
@@ -46,9 +46,16 @@ python main.py
 - `CORS_ORIGINS` (CSV, default `*`): Allowed CORS origins.
 - `MAX_BUNDLE_DAYS` (Integer, default `31`): Maximum date span for `/api/bundle`.
 - `MAX_SITEMAP_PAGES` (Integer, default `100`): Maximum sitemap pages to crawl.
+- `CACHE_TTL_SECONDS` (Integer, default `0`): In-memory upstream cache TTL, `0` disables.
+- `CACHE_MAX_ENTRIES` (Integer, default `256`): Maximum cached responses.
+- `RATE_LIMIT_PER_MINUTE` (Integer, default `0`): Per-client request cap on `/api/*`, `0` disables.
+- `LOG_FORMAT` (`text` or `json`, default `text`): JSON lines for log aggregators.
+- `LOG_LEVEL` (String, default `INFO`): Logging level.
+- `TRUST_PROXY_HOPS` (Integer, default `0`): Trusted reverse-proxy hops.
 - `DOTENV_PATH` (Path, default `None`): Explicit `.env` file path.
 
 ## Architecture Notes
 
-- Stateless HTTP layer: no internal database or caching layer; requests trigger live upstream fetches via `forex-pytory`.
+- Stateless HTTP layer: no database. Requests trigger live upstream fetches via `forex-pytory` unless the optional in-process cache is enabled.
+- Deployment: `docker-compose.yml` (Caddy reverse proxy with TLS) and a Helm chart in `deploy/helm/forexfactory-scrapper`.
 - Strict validation: invalid dates or negative pagination values return `HTTP 400` with `{"error": "..."}`.
