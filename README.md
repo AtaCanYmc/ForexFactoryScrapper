@@ -5,6 +5,9 @@
 [![CI](https://github.com/AtaCanYmc/ForexFactoryScrapper/actions/workflows/ci.yml/badge.svg)](https://github.com/AtaCanYmc/ForexFactoryScrapper/actions)
 [![Docs](https://img.shields.io/badge/docs-mkdocs--material-blue.svg)](https://atacanymc.github.io/ForexFactoryScrapper/)
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/)
+[![Release](https://img.shields.io/github/v/release/AtaCanYmc/ForexFactoryScrapper)](https://github.com/AtaCanYmc/ForexFactoryScrapper/releases)
+[![Last Commit](https://img.shields.io/github/last-commit/AtaCanYmc/ForexFactoryScrapper)](https://github.com/AtaCanYmc/ForexFactoryScrapper/commits/main)
+[![Docker](https://img.shields.io/badge/docker-ready-blue?logo=docker)](Dockerfile)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ForexFactoryScrapper is a Flask REST API service that aggregates and serves economic calendar events from financial portals including ForexFactory, CryptoCraft, EnergyExch, and MetalsMine.
