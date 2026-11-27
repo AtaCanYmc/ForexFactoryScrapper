@@ -108,3 +108,16 @@ def test_health_probe_metrics(client, monkeypatch):
     monkeypatch.setattr(h, "probe_metrics", performance.probe_metrics)
     data = client.get("/api/health?probe=true").get_json()
     assert data["status"] == "ok" and "memory_mb" in data
+
+
+def test_probe_metrics_upstream_unreachable(monkeypatch):
+    from src import performance
+
+    def boom(*a, **k):
+        raise OSError("offline")
+
+    monkeypatch.setattr(performance, "HTTPSConnection", boom)
+    out = performance.probe_metrics()
+    assert out["upstream"]["reachable"] is False
+    assert out["upstream"]["error"] == "OSError"
+    assert out["memory_mb"] > 0

@@ -3,7 +3,7 @@ import resource
 import sys
 import threading
 import time
-import urllib.request
+from http.client import HTTPSConnection
 from collections import defaultdict, deque
 
 from flask import jsonify, request
@@ -13,7 +13,7 @@ _cache_lock = threading.Lock()
 _hits = defaultdict(deque)
 _hits_lock = threading.Lock()
 
-UPSTREAM_PROBE_URL = "https://www.forexfactory.com/"
+UPSTREAM_PROBE_HOST = "www.forexfactory.com"
 
 
 def _int_env(name, default):
@@ -72,9 +72,12 @@ def probe_metrics():
     """Upstream reachability latency (ms) and peak process memory (MB)."""
     start = time.monotonic()
     try:
-        req = urllib.request.Request(UPSTREAM_PROBE_URL, method="HEAD")
-        with urllib.request.urlopen(req, timeout=5) as r:
-            upstream = {"reachable": True, "status": r.status}
+        conn = HTTPSConnection(UPSTREAM_PROBE_HOST, timeout=5)
+        try:
+            conn.request("HEAD", "/")
+            upstream = {"reachable": True, "status": conn.getresponse().status}
+        finally:
+            conn.close()
     except Exception as e:
         upstream = {"reachable": False, "error": type(e).__name__}
     upstream["latency_ms"] = round((time.monotonic() - start) * 1000, 1)
