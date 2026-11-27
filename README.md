@@ -229,9 +229,11 @@ Execute unit and integration tests using pytest:
 python -m pytest -q
 ```
 
-Test files are located under `tests/`. External network requests are monkeypatched in test suites to ensure fast and deterministic execution.
+Test files are located under `tests/`: `test_app.py` covers routes and `test_security.py` covers headers, input validation, and defaults. External network requests are monkeypatched in test suites to ensure fast and deterministic execution.
 
 ## Documentation and Developer Commands
+
+Two documentation sites are published by `.github/workflows/docs.yml`: the MkDocs site built from `docs/`, and the static landing page in `pages/` (`index.html`, `index.css`, `index.js`, `llms.txt`, `robots.txt`, `sitemap.xml`).
 
 A `Makefile` is provided to streamline local development, testing, and documentation generation:
 
