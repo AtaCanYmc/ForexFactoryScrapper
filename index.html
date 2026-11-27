@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="index, follow">
+  <title>ForexFactoryScrapper — Economic Calendar REST API</title>
+  <meta name="description" content="A stateless Flask REST API service aggregating economic calendar events from ForexFactory, CryptoCraft, EnergyExch, and MetalsMine.">
+  <link rel="canonical" href="https://atacanymc.github.io/ForexFactoryScrapper/">
+  <link rel="alternate" type="text/markdown" href="llms.txt" title="LLM-friendly documentation">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2310b981'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' fill='%23090a0f' font-family='monospace' font-weight='700' font-size='14'%3EFF%3C/text%3E%3C/svg%3E">
+
+  <!-- Open Graph & Twitter Card -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ForexFactoryScrapper">
+  <meta property="og:title" content="ForexFactoryScrapper — Economic Calendar REST API">
+  <meta property="og:description" content="A stateless Flask REST API service aggregating economic calendar events from ForexFactory, CryptoCraft, EnergyExch, and MetalsMine.">
+  <meta property="og:url" content="https://atacanymc.github.io/ForexFactoryScrapper/">
+  <meta property="og:image" content="https://atacanymc.github.io/ForexFactoryScrapper/assets/banner.jpg">
+  <meta property="og:image:width" content="1376">
+  <meta property="og:image:height" content="768">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ForexFactoryScrapper — Economic Calendar REST API">
+  <meta name="twitter:description" content="Stateless Flask REST API for ForexFactory, CryptoCraft, EnergyExch, and MetalsMine economic calendars.">
+  <meta name="twitter:image" content="https://atacanymc.github.io/ForexFactoryScrapper/assets/banner.jpg">
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "ForexFactoryScrapper",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Linux, macOS, Windows, Docker",
+        "url": "https://atacanymc.github.io/ForexFactoryScrapper/",
+        "codeRepository": "https://github.com/AtaCanYmc/ForexFactoryScrapper",
+        "license": "https://opensource.org/licenses/MIT",
+        "programmingLanguage": "Python",
+        "image": "https://atacanymc.github.io/ForexFactoryScrapper/assets/banner.jpg",
+        "description": "A stateless Flask REST API service aggregating economic calendar events from ForexFactory, CryptoCraft, EnergyExch, and MetalsMine via forex-pytory.",
+        "author": {
+          "@type": "Person",
+          "name": "Ata Can Yaymacı",
+          "url": "https://github.com/AtaCanYmc"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Why is the scraping engine separated into forex-pytory?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Separating the scraper into forex-pytory keeps HTTP presentation decoupled from HTML parsing. When target portals change their DOM, parser updates ship in forex-pytory without altering the API routing layer. The service has no database. Requests trigger live upstream fetches unless the optional in-process cache (CACHE_TTL_SECONDS) is enabled, and RATE_LIMIT_PER_MINUTE caps each client."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How are invalid dates or pagination parameters handled?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Parameters are validated before invoking upstream scrapers. Malformed dates, non-integer date parts, or negative pagination values return HTTP 400 with a structured JSON payload: {\"error\": \"...\"}."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <div id="toast-region" class="toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <header class="site-header" id="site-header">
+    <div class="container header-inner" id="header-inner">
+      <a class="site-logo" href="#main-content">
+        <span class="site-logo-mark" aria-hidden="true">FF</span>
+        <span>ForexFactoryScrapper</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Primary">
+        <button
+          class="menu-button"
+          type="button"
+          popovertarget="site-menu"
+          popovertargetaction="toggle"
+          aria-controls="site-menu"
+        >
+          <span>Menu</span>
+        </button>
+
+        <ul id="site-menu" class="site-menu" popover="auto">
+          <li><a href="#playground">Sandbox</a></li>
+          <li><a href="#architecture">Architecture</a></li>
+          <li><a href="#quickstart">Quick Start</a></li>
+          <li><a href="#endpoints">Endpoints</a></li>
+          <li><a href="#config">Config &amp; CLI</a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li>
+            <a class="nav-repo" href="https://github.com/AtaCanYmc/ForexFactoryScrapper" target="_blank" rel="noopener noreferrer">
+              GitHub
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="container hero-grid">
+        <div>
+          <h1 id="hero-heading" class="hero-title">Economic calendar data in one stateless REST API.</h1>
+          <p class="hero-lead">
+            ForexFactoryScrapper is a Flask service powered by
+            <a href="https://github.com/AtaCanYmc/forex-pytory" target="_blank" rel="noopener noreferrer">forex-pytory</a>.
+            It validates parameters, paginates results, and exposes OpenAPI 3.0 endpoints across ForexFactory, CryptoCraft, EnergyExch, and MetalsMine.
+          </p>
+
+          <div class="hero-actions">
+            <a href="#playground" class="btn btn-primary">Open API Sandbox</a>
+            <a href="#quickstart" class="btn btn-secondary">Docker &amp; Local Setup</a>
+            <a href="https://youtu.be/_nROisUlAeQ" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">Watch the 84s Explainer</a>
+          </div>
+
+          <div class="hero-cmd">
+            <code>docker run -d -p 5000:5000 forexfactory-scrapper</code>
+            <button type="button" class="btn btn-secondary btn-sm" data-copy="docker run -d -p 5000:5000 --name forexfactory-scrapper forexfactory-scrapper" data-copy-msg="Docker command copied">
+              Copy
+            </button>
+          </div>
+        </div>
+
+        <figure class="hero-figure">
+          <img
+            src="assets/banner.jpg"
+            alt="ForexFactoryScrapper REST API overview banner"
+            width="1376"
+            height="768"
+            fetchpriority="high"
+            decoding="async"
+          >
+          <figcaption>OpenAPI 3.0 · Flask + forex-pytory · Stateless HTTP layer</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Supported Portals -->
+    <section class="section" aria-labelledby="portals-heading">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Supported Sources</p>
+            <h2 id="portals-heading" class="section-title">Four financial portals, one schema</h2>
+          </div>
+        </div>
+
+        <ul class="portal-list">
+          <li class="portal-item">
+            <span class="portal-route">/api/forex/daily</span>
+            <h3>ForexFactory</h3>
+            <p>Central bank rate decisions, NFP, CPI prints, and macroeconomic releases with impact ratings.</p>
+          </li>
+          <li class="portal-item">
+            <span class="portal-route">/api/cryptocraft/daily</span>
+            <h3>CryptoCraft</h3>
+            <p>Digital asset catalysts, protocol upgrades, token unlocks, and regulatory calendar events.</p>
+          </li>
+          <li class="portal-item">
+            <span class="portal-route">/api/energyexch/daily</span>
+            <h3>EnergyExch</h3>
+            <p>Crude oil inventories, natural gas storage reports, OPEC+ meetings, and energy indicators.</p>
+          </li>
+          <li class="portal-item">
+            <span class="portal-route">/api/metalsmine/daily</span>
+            <h3>MetalsMine</h3>
+            <p>Precious and industrial metals schedules covering Gold, Silver, and Copper supply reports.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Interactive API Sandbox -->
+    <section id="playground" class="section" aria-labelledby="playground-heading">
+      <div class="container">
+        <div class="section-head section-head--split">
+          <div>
+            <p class="section-kicker">Interactive Workbench</p>
+            <h2 id="playground-heading" class="section-title">API Request &amp; Schema Simulator</h2>
+          </div>
+          <p class="section-lead">
+            Configure routes, dates, sources, and pagination to generate a ready-to-run cURL command and inspect the expected JSON payload structure. Responses below are schema-accurate mock examples.
+          </p>
+        </div>
+
+        <div class="workbench">
+          <div class="workbench-controls">
+            <div class="field">
+              <label for="sim-endpoint">Endpoint Route</label>
+              <select id="sim-endpoint" class="select">
+                <option value="bundle">GET /api/bundle</option>
+                <option value="forex">GET /api/forex/daily</option>
+                <option value="crypto">GET /api/cryptocraft/daily</option>
+                <option value="energy">GET /api/energyexch/daily</option>
+                <option value="metals">GET /api/metalsmine/daily</option>
+                <option value="sitemaps">GET /api/forex/sitemaps</option>
+                <option value="health">GET /api/health</option>
+              </select>
+            </div>
+
+            <div id="sim-params-bundle" class="field">
+              <div class="field-row">
+                <div class="field">
+                  <label for="sim-start-date">start_date *</label>
+                  <input type="date" id="sim-start-date" class="input" value="2026-05-20">
+                </div>
+                <div class="field">
+                  <label for="sim-end-date">end_date *</label>
+                  <input type="date" id="sim-end-date" class="input" value="2026-05-21">
+                </div>
+              </div>
+
+              <fieldset>
+                <legend>sources</legend>
+                <div class="checkbox-group">
+                  <label class="checkbox-pill"><input type="checkbox" value="forex" checked class="sim-source-cb"> forex</label>
+                  <label class="checkbox-pill"><input type="checkbox" value="crypto" checked class="sim-source-cb"> crypto</label>
+                  <label class="checkbox-pill"><input type="checkbox" value="energy" class="sim-source-cb"> energy</label>
+                  <label class="checkbox-pill"><input type="checkbox" value="metal" class="sim-source-cb"> metal</label>
+                </div>
+              </fieldset>
+            </div>
+
+            <div id="sim-params-daily" class="field-row field-row--3 hidden">
+              <div class="field">
+                <label for="sim-day">day *</label>
+                <input type="number" id="sim-day" class="input" min="1" max="31" value="20">
+              </div>
+              <div class="field">
+                <label for="sim-month">month *</label>
+                <input type="number" id="sim-month" class="input" min="1" max="12" value="5">
+              </div>
+              <div class="field">
+                <label for="sim-year">year *</label>
+                <input type="number" id="sim-year" class="input" min="2007" max="2030" value="2026">
+              </div>
+            </div>
+
+            <div id="sim-params-sitemaps" class="field hidden">
+              <label for="sim-max-pages">max_pages (default: 10)</label>
+              <input type="number" id="sim-max-pages" class="input" min="1" max="100" value="10">
+            </div>
+
+            <div id="sim-params-pagination" class="field-row">
+              <div class="field">
+                <label for="sim-limit">limit</label>
+                <input type="number" id="sim-limit" class="input" min="0" max="100" value="25">
+              </div>
+              <div class="field">
+                <label for="sim-offset">offset</label>
+                <input type="number" id="sim-offset" class="input" min="0" value="0">
+              </div>
+            </div>
+          </div>
+
+          <div class="workbench-output">
+            <div class="output-bar">
+              <div>
+                <span id="sim-status-badge" class="status-badge">200 OK</span>
+              </div>
+              <div style="display: flex; gap: var(--space-2);">
+                <button type="button" id="copy-curl-btn" class="btn btn-secondary btn-sm">Copy cURL</button>
+                <button type="button" id="copy-json-btn" class="btn btn-secondary btn-sm">Copy JSON</button>
+              </div>
+            </div>
+            <div class="curl-box">
+              <code id="sim-curl-output"></code>
+            </div>
+            <pre id="sim-json-output" class="json-pre"></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Architecture -->
+    <section id="architecture" class="section" aria-labelledby="architecture-heading">
+      <div class="container">
+        <div class="section-head section-head--split">
+          <div>
+            <p class="section-kicker">System Decoupling</p>
+            <h2 id="architecture-heading" class="section-title">Stateless HTTP layer over forex-pytory</h2>
+          </div>
+          <p class="section-lead">
+            HTML extraction and DOM parsing stay isolated in <code>forex-pytory</code>. ForexFactoryScrapper handles request validation, offset/limit pagination, multi-source date bundling, CORS, and OpenAPI 3.0 schema generation.
+          </p>
+        </div>
+
+        <figure class="arch-figure">
+          <img
+            src="assets/architecture.svg"
+            alt="System architecture showing HTTP clients calling the Flask API layer, which delegates HTML parsing to forex-pytory across four financial portals"
+            width="960"
+            height="600"
+            loading="lazy"
+            decoding="async"
+          >
+        </figure>
+      </div>
+    </section>
+
+    <!-- Quick Start -->
+    <section id="quickstart" class="section" aria-labelledby="quickstart-heading">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Deployment</p>
+            <h2 id="quickstart-heading" class="section-title">Run locally or in Docker</h2>
+          </div>
+        </div>
+
+        <div class="quickstart-grid">
+          <div class="code-panel">
+            <div class="code-tabs">
+              <div class="tab-group" role="tablist" aria-label="Installation method">
+                <button type="button" role="tab" id="tab-docker" class="tab-btn" aria-selected="true" aria-controls="panel-docker">Docker</button>
+                <button type="button" role="tab" id="tab-local" class="tab-btn" aria-selected="false" aria-controls="panel-local">Local (Python 3.10+)</button>
+              </div>
+              <button type="button" id="copy-install-btn" class="btn btn-secondary btn-sm">Copy</button>
+            </div>
+
+            <pre id="panel-docker" role="tabpanel" aria-labelledby="tab-docker"><code># 1. Build the image
+docker build -t forexfactory-scrapper .
+
+# 2. Run container on port 5000
+docker run -d -p 5000:5000 --name forexfactory-scrapper forexfactory-scrapper
+
+# 3. Verify health endpoint
+curl -f http://localhost:5000/api/health</code></pre>
+
+            <pre id="panel-local" role="tabpanel" aria-labelledby="tab-local" class="hidden"><code># Prerequisites: Python 3.10, 3.11, or 3.12
+python -m venv .venv
+source .venv/bin/activate
+
+pip install -r requirements.txt
+python main.py</code></pre>
+          </div>
+
+          <ul class="interface-list" aria-label="Built-in web interfaces">
+            <li class="interface-item">
+              <div>
+                <strong>Landing Page</strong>
+                <code>http://localhost:5000/</code>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" data-copy="http://localhost:5000/" data-copy-msg="Landing URL copied">Copy</button>
+            </li>
+            <li class="interface-item">
+              <div>
+                <strong>Swagger UI Console</strong>
+                <code>http://localhost:5000/swagger</code>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" data-copy="http://localhost:5000/swagger" data-copy-msg="Swagger URL copied">Copy</button>
+            </li>
+            <li class="interface-item">
+              <div>
+                <strong>OpenAPI 3.0 Spec</strong>
+                <code>http://localhost:5000/openapi.json</code>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" data-copy="http://localhost:5000/openapi.json" data-copy-msg="OpenAPI URL copied">Copy</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Endpoint Reference -->
+    <section id="endpoints" class="section" aria-labelledby="endpoints-heading">
+      <div class="container">
+        <div class="section-head section-head--split">
+          <div>
+            <p class="section-kicker">API Reference</p>
+            <h2 id="endpoints-heading" class="section-title">Endpoints &amp; Parameters</h2>
+          </div>
+          <div class="filter-bar field">
+            <label for="endpoint-search">Filter routes</label>
+            <input type="search" id="endpoint-search" class="input" placeholder="e.g. bundle, forex, sitemaps">
+          </div>
+        </div>
+
+        <div tabindex="0" role="region" aria-labelledby="endpoints-table-caption" class="table-wrapper">
+          <table class="data-table endpoints-table">
+            <caption id="endpoints-table-caption">ForexFactoryScrapper HTTP endpoints</caption>
+            <thead>
+              <tr>
+                <th scope="col">Path</th>
+                <th scope="col">Method</th>
+                <th scope="col">Required</th>
+                <th scope="col">Optional</th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody id="endpoints-tbody">
+              <tr class="endpoint-row">
+                <th scope="row">/</th>
+                <td><span class="method-tag">GET</span></td>
+                <td>None</td>
+                <td>None</td>
+                <td>HTML landing page with quick navigation links.</td>
+              </tr>
+              <tr class="endpoint-row">
+                <th scope="row">/api/hello</th>
+                <td><span class="method-tag">GET</span></td>
+                <td>None</td>
+                <td>None</td>
+                <td>Basic sanity check endpoint.</td>
+              </tr>
+              <tr class="endpoint-row">
+                <th scope="row">/api/health</th>
+                <td><span class="method-tag">GET</span></td>
+                <td>None</td>
+                <td>None</td>
+                <td>Service health check returning operational status.</td>
+              </tr>
+              <tr class="endpoint-row">
+                <th scope="row">/api/forex/daily</th>
+                <td><span class="method-tag">GET</span></td>
+                <td><code>day, month, year</code></td>
+                <td><code>limit, offset</code></td>
+                <td>ForexFactory economic calendar events for a specific day.</td>
+              </tr>
+              <tr class="endpoint-row">
+                <th scope="row">/api/cryptocraft/daily</th>
+                <td><span class="method-tag">GET</span></td>
+                <td><code>day, month, year</code></td>
+                <td><code>limit, offset</code></td>
+                <td>CryptoCraft calendar events for a specific day.</td>
+              </tr>
+              <tr class="endpoint-row">
+                <th scope="row">/api/energyexch/daily</th>
+                <td><span class="method-tag">GET</span></td>
+                <td><code>day, month, year</code></td>
+                <td><code>limit, offset</code></td>
+                <td>EnergyExch calendar events for a specific day.</td>
+              </tr>
+              <tr class="endpoint-row">
+                <th scope="row">/api/metalsmine/daily</th>
+                <td><span class="method-tag">GET</span></td>
+                <td><code>day, month, year</code></td>
+                <td><code>limit, offset</code></td>
+                <td>MetalsMine calendar events for a specific day.</td>
+              </tr>
+              <tr class="endpoint-row">
+                <th scope="row">/api/bundle</th>
+                <td><span class="method-tag">GET</span></td>
+                <td><code>start_date, end_date</code></td>
+                <td><code>sources, limit, offset</code></td>
+                <td>Aggregated events across selected platforms for a date range.</td>
+              </tr>
+              <tr class="endpoint-row">
+                <th scope="row">/api/forex/sitemaps</th>
+                <td><span class="method-tag">GET</span></td>
+                <td>None</td>
+                <td><code>start_date, end_date, max_pages, limit, offset</code></td>
+                <td>Paginated sitemap URLs retrieved from ForexFactory.</td>
+              </tr>
+              <tr class="endpoint-row">
+                <th scope="row">/swagger</th>
+                <td><span class="method-tag">GET</span></td>
+                <td>None</td>
+                <td>None</td>
+                <td>Swagger UI documentation console.</td>
+              </tr>
+              <tr class="endpoint-row">
+                <th scope="row">/openapi.json</th>
+                <td><span class="method-tag">GET</span></td>
+                <td>None</td>
+                <td>None</td>
+                <td>Raw OpenAPI 3.0 schema definition (<code>src/openapi_spec.py</code>).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Configuration & CLI -->
+    <section id="config" class="section" aria-labelledby="config-heading">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Operations &amp; Tooling</p>
+            <h2 id="config-heading" class="section-title">Environment Variables &amp; Makefile</h2>
+          </div>
+        </div>
+
+        <div class="ops-grid">
+          <div tabindex="0" role="region" aria-labelledby="env-table-caption" class="table-wrapper">
+            <table class="data-table env-table">
+              <caption id="env-table-caption">Environment variables loaded via python-dotenv</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Default</th>
+                  <th scope="col">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">HOST</th>
+                  <td>String</td>
+                  <td><code>127.0.0.1</code></td>
+                  <td>Network interface to bind (<code>0.0.0.0</code> in Docker).</td>
+                </tr>
+                <tr>
+                  <th scope="row">PORT</th>
+                  <td>Integer</td>
+                  <td><code>5000</code></td>
+                  <td>Port number for incoming HTTP connections.</td>
+                </tr>
+                <tr>
+                  <th scope="row">DEBUG</th>
+                  <td>Boolean</td>
+                  <td><code>False</code></td>
+                  <td>Enable Flask debug reloader and tracebacks.</td>
+                </tr>
+                <tr>
+                  <th scope="row">CORS_ORIGINS</th>
+                  <td>CSV</td>
+                  <td><code>*</code></td>
+                  <td>Allowed CORS origin URLs.</td>
+                </tr>
+                <tr>
+                  <th scope="row">MAX_BUNDLE_DAYS</th>
+                  <td>Integer</td>
+                  <td><code>31</code></td>
+                  <td>Maximum allowed date span for <code>/api/bundle</code>.</td>
+                </tr>
+                <tr>
+                  <th scope="row">MAX_SITEMAP_PAGES</th>
+                  <td>Integer</td>
+                  <td><code>100</code></td>
+                  <td>Maximum pages to crawl for <code>/api/forex/sitemaps</code>.</td>
+                </tr>
+                <tr>
+                  <th scope="row">DOTENV_PATH</th>
+                  <td>Path</td>
+                  <td><code>None</code></td>
+                  <td>Explicit file path to load environment variables from.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="make-grid" aria-label="Makefile commands">
+            <button type="button" class="make-btn" data-copy="make install" data-copy-msg="Copied: make install">
+              <code>make install</code>
+              <span>Install runtime and test dependencies</span>
+            </button>
+            <button type="button" class="make-btn" data-copy="make run" data-copy-msg="Copied: make run">
+              <code>make run</code>
+              <span>Start server on 0.0.0.0:5000</span>
+            </button>
+            <button type="button" class="make-btn" data-copy="make test" data-copy-msg="Copied: make test">
+              <code>make test</code>
+              <span>Execute pytest suite</span>
+            </button>
+            <button type="button" class="make-btn" data-copy="make lint" data-copy-msg="Copied: make lint">
+              <code>make lint</code>
+              <span>Run flake8 and black checks</span>
+            </button>
+            <button type="button" class="make-btn" data-copy="make format" data-copy-msg="Copied: make format">
+              <code>make format</code>
+              <span>Auto-format codebase with black</span>
+            </button>
+            <button type="button" class="make-btn" data-copy="make docker-build" data-copy-msg="Copied: make docker-build">
+              <code>make docker-build</code>
+              <span>Build container image</span>
+            </button>
+            <button type="button" class="make-btn" data-copy="make docker-run" data-copy-msg="Copied: make docker-run">
+              <code>make docker-run</code>
+              <span>Run containerized service</span>
+            </button>
+            <button type="button" class="make-btn" data-copy="python -m pytest -q" data-copy-msg="Copied: python -m pytest -q">
+              <code>python -m pytest -q</code>
+              <span>Deterministic monkeypatched test run</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ & Governance -->
+    <section id="faq" class="section" aria-labelledby="faq-heading">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Architecture &amp; Governance</p>
+            <h2 id="faq-heading" class="section-title">Frequently Asked Questions</h2>
+          </div>
+        </div>
+
+        <div class="accordion">
+          <details open>
+            <summary>Why is the scraping engine separated into forex-pytory?</summary>
+            <div class="accordion-body">
+              <p>Separating the scraper into <code>forex-pytory</code> keeps HTTP presentation decoupled from HTML parsing. When target portals change their DOM, parser updates ship in <code>forex-pytory</code> without altering the API routing layer.</p>
+              <p>The service has no database. Requests trigger live upstream fetches unless the optional in-process cache (CACHE_TTL_SECONDS) is enabled, and RATE_LIMIT_PER_MINUTE caps each client.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>How are invalid dates or pagination parameters handled?</summary>
+            <div class="accordion-body">
+              <p>Parameters are validated before invoking upstream scrapers. Malformed dates, non-integer date parts, or negative pagination values return <code>HTTP 400</code> with a structured JSON payload: <code>{"error": "..."}</code>.</p>
+            </div>
+          </details>
+        </div>
+
+        <ul class="gov-list" aria-label="Project governance documents">
+          <li><a href="https://github.com/AtaCanYmc/ForexFactoryScrapper/blob/main/ROADMAP.md" target="_blank" rel="noopener noreferrer">ROADMAP.md</a></li>
+          <li><a href="https://github.com/AtaCanYmc/ForexFactoryScrapper/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">CONTRIBUTING.md</a></li>
+          <li><a href="https://github.com/AtaCanYmc/ForexFactoryScrapper/blob/main/SECURITY.md" target="_blank" rel="noopener noreferrer">SECURITY.md</a></li>
+          <li><a href="https://github.com/AtaCanYmc/ForexFactoryScrapper/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT LICENSE</a></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>ForexFactoryScrapper · MIT License · © 2026 Ata Can Yaymacı</span>
+      <div class="footer-links">
+        <a href="https://github.com/AtaCanYmc/ForexFactoryScrapper" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/AtaCanYmc/forex-pytory" target="_blank" rel="noopener noreferrer">forex-pytory</a>
+        <a href="https://github.com/AtaCanYmc/ForexFactoryScrapper/blob/main/ROADMAP.md" target="_blank" rel="noopener noreferrer">Roadmap</a>
+        <a href="https://github.com/AtaCanYmc/ForexFactoryScrapper/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">License</a>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="index.js"></script>
+</body>
+</html>

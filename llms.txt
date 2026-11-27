@@ -1,0 +1,83 @@
+# ForexFactoryScrapper
+
+> A stateless Flask REST API that aggregates and serves economic calendar events from ForexFactory, CryptoCraft, EnergyExch, and MetalsMine through the upstream `forex-pytory` package.
+
+- Site: https://atacanymc.github.io/ForexFactoryScrapper/
+- Explainer video: https://youtu.be/_nROisUlAeQ
+- Repository: https://github.com/AtaCanYmc/ForexFactoryScrapper
+- Upstream parser: https://github.com/AtaCanYmc/forex-pytory
+- License: MIT
+
+## Quick start
+
+### Docker
+
+```bash
+docker build -t forexfactory-scrapper .
+docker run -d -p 5000:5000 --name forexfactory-scrapper forexfactory-scrapper
+curl -f http://localhost:5000/api/health
+```
+
+### Local, Python 3.10, 3.11, or 3.12
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python main.py
+```
+
+Defaults work without a `.env` file. Copy `.env.example` to `.env` for non-default settings.
+
+## HTTP endpoints
+
+- `GET /`: HTML landing page with navigation links.
+- `GET /api/hello`: Sanity check. Returns `{"message": "Hello, World!", "status": "success"}`.
+- `GET /api/health`: Liveness check. Returns `{"status": "ok"}`. Add `?probe=true` to include `upstream` reachability and `memory_mb`.
+- `GET /api/forex/daily?day=<1-31>&month=<1-12>&year=<YYYY>&limit=<N>&offset=<N>`: ForexFactory daily events.
+- `GET /api/cryptocraft/daily?day=<1-31>&month=<1-12>&year=<YYYY>&limit=<N>&offset=<N>`: CryptoCraft daily events.
+- `GET /api/energyexch/daily?day=<1-31>&month=<1-12>&year=<YYYY>&limit=<N>&offset=<N>`: EnergyExch daily events.
+- `GET /api/metalsmine/daily?day=<1-31>&month=<1-12>&year=<YYYY>&limit=<N>&offset=<N>`: MetalsMine daily events.
+- `GET /api/bundle?start_date=<YYYY-MM-DD>&end_date=<YYYY-MM-DD>&sources=forex,crypto,energy,metal&limit=<N>&offset=<N>`: Multi-source date-range aggregation with a per-source breakdown.
+- `GET /api/forex/sitemaps?start_date=<YYYY-MM-DD>&end_date=<YYYY-MM-DD>&max_pages=<N>&limit=<N>&offset=<N>`: Paginated ForexFactory sitemap URLs.
+- `GET /metrics`: Prometheus text exposition.
+- `GET /swagger`: Swagger UI console.
+- `GET /openapi.json`: OpenAPI 3.0.0 document defined in `src/openapi_spec.py`.
+
+`limit` accepts 0 to 500. `offset` accepts 0 to 100000. `/api/bundle` ranges are capped by `MAX_BUNDLE_DAYS`. `/api/forex/sitemaps` caps `max_pages` at `MAX_SITEMAP_PAGES`.
+
+## Authentication and errors
+
+- `API_KEYS` is a comma-separated list. When set, `/api/*` requires `X-API-Key: <key>` or `Authorization: Bearer <key>`.
+- `/api/health` and `/metrics` stay open.
+- `401` returns `{"error": "Missing or invalid API key"}` with `WWW-Authenticate: Bearer`.
+- `429` returns `{"error": "Rate limit exceeded"}` with `Retry-After` in seconds.
+- Validation failures return `400` with a JSON body.
+- Every response includes `X-Request-ID`. An inbound value is reused when present.
+
+## Environment variables
+
+- `HOST` (String, default `127.0.0.1`; `0.0.0.0` in Docker): Bind interface.
+- `PORT` (Integer, default `5000`): HTTP port.
+- `DEBUG` (Boolean, default `False`): Flask debug mode.
+- `CORS_ORIGINS` (CSV, default `*`): Allowed CORS origins.
+- `MAX_BUNDLE_DAYS` (Integer, default `31`): Maximum date span for `/api/bundle`.
+- `MAX_SITEMAP_PAGES` (Integer, default `100`): Upper bound for the sitemaps `max_pages` parameter.
+- `CACHE_TTL_SECONDS` (Integer, default `0`): Upstream cache TTL. `0` disables caching.
+- `CACHE_BACKEND` (`memory` or `redis`, default `memory`): `memory` is per process. `redis` is shared and needs `REDIS_URL`.
+- `CACHE_MAX_ENTRIES` (Integer, default `256`): Maximum memory cache entries. Ignored by the Redis backend.
+- `REDIS_URL` (String, default `redis://localhost:6379/0`): Redis connection URL.
+- `RATE_LIMIT_PER_MINUTE` (Integer, default `0`): Per-client sliding-window cap on `/api/*`. `0` disables it.
+- `API_KEYS` (CSV, default empty): API keys for `/api/*`.
+- `LOG_FORMAT` (`text` or `json`, default `text`): JSON emits one object per line, including access logs.
+- `LOG_LEVEL` (String, default `INFO`): Python logging level.
+- `TRUST_PROXY_HOPS` (Integer, default `0`): Trusted reverse-proxy hops. Set `1` behind Caddy or an ingress.
+- `DOTENV_PATH` (Path, default none): Explicit `.env` file path.
+
+## Architecture notes
+
+- The HTTP layer is stateless and has no database. Requests fetch live upstream data through `forex-pytory` unless the cache is enabled.
+- HTML parsing and DOM handling stay in `forex-pytory`. Route code handles validation, pagination, CORS, OpenAPI, auth, limits, and metrics.
+- Cache failures fall back to live upstream fetches.
+- Deploy with `docker-compose.yml` (Caddy TLS) or the Helm chart in `deploy/helm/forexfactory-scrapper`.
+- The GitHub Pages site in `pages/` is documentation and a request sandbox, not the API server.
