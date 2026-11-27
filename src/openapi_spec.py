@@ -3,7 +3,7 @@ OPENAPI_SPEC = {
     "openapi": "3.0.0",
     "info": {
         "title": "ForexFactoryScrapper API",
-        "version": "1.0.0",
+        "version": "2.1.0",  # x-release-please-version
         "description": "OpenAPI spec with schemas for the scraping API",
         "contact": {"name": "Repo maintainer", "email": "atacanymc@gmail.com"},
         "license": {"name": "MIT", "url": "https://opensource.org/licenses/MIT"},

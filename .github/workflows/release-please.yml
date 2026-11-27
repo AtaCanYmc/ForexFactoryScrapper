@@ -12,8 +12,33 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      major: ${{ steps.release.outputs.major }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
+      # Config and manifest live in release-please-config.json and
+      # .release-please-manifest.json. They bump version.txt, Chart.yaml,
+      # and src/openapi_spec.py together and create the vX.Y.Z tag.
       - uses: googleapis/release-please-action@v5
         id: release
         with:
-          release-type: simple
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  floating-major-tag:
+    name: Move floating major tag
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Point vMAJOR at the new release tag
+        env:
+          MAJOR: ${{ needs.release-please.outputs.major }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+        run: |
+          git tag -f "v${MAJOR}" "${TAG}"
+          git push -f origin "refs/tags/v${MAJOR}"

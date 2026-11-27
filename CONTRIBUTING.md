@@ -71,6 +71,10 @@ Add endpoint and pagination unit tests for cryptocraft daily events.
    ```
    The server binds to `http://127.0.0.1:5000` by default.
 
+## Versioning & Releases
+
+Release Please owns every version number. Do not edit versions by hand. On each merge to `main` it opens a release PR from Conventional Commits. Merging that PR bumps `version.txt`, `Chart.yaml` (`version` and `appVersion`), and `src/openapi_spec.py` together, updates `CHANGELOG.md`, and creates the `vX.Y.Z` tag. A follow-up job moves the floating `vX` tag. Configuration lives in `release-please-config.json` and `.release-please-manifest.json`. Add a new file to `extra-files` and mark its version line with `x-release-please-version` to bring it under the same control.
+
 ## Code Quality & Pre-commit
 
 Install and run pre-commit hooks before pushing changes:
