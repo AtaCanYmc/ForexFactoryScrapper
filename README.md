@@ -80,6 +80,8 @@ Interactive documentation interfaces:
 - Swagger UI: `http://localhost:5000/swagger`
 - OpenAPI Specification: `http://localhost:5000/openapi.json`
 
+Optional: run `python scripts/init_wizard.py` to generate a `.env` interactively.
+
 ## API Reference
 
 ### Endpoint Overview
@@ -273,6 +275,7 @@ A `Makefile` is provided to streamline local development and testing:
 | Command | Description |
 | :--- | :--- |
 | `make venv` | Create `.venv`. |
+| `make init` | Interactive wizard that writes `.env` (`python scripts/init_wizard.py --defaults` for no prompts). |
 | `make install` | Install runtime and test dependencies. |
 | `make install-dev` | Install black, flake8, and bandit. |
 | `make run` | Start the API server locally. |

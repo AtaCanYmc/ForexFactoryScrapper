@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help venv install install-dev run test lint format security check docker-build docker-run docker-stop docker-logs clean
+.PHONY: help init venv install install-dev run test lint format security check docker-build docker-run docker-stop docker-logs clean
 
 VENV ?= .venv
 # Use the virtualenv interpreter when it exists, otherwise fall back to the system one.
@@ -12,6 +12,9 @@ help: ## Show this help
 
 venv: ## Create the virtualenv in .venv
 	python3 -m venv $(VENV)
+
+init: ## Interactive wizard that writes .env
+	$(PYTHON) scripts/init_wizard.py
 
 install: ## Install runtime and test dependencies
 	$(PYTHON) -m pip install -r requirements.txt
