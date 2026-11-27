@@ -245,14 +245,20 @@ A `Makefile` is provided to streamline local development and testing:
 
 | Command | Description |
 | :--- | :--- |
-| `make install` | Install project runtime and testing dependencies. |
-| `make run` | Start the Flask development server on `0.0.0.0:5000`. |
-| `make test` | Execute test suite via pytest. |
-| `make lint` | Run flake8 and black formatting checks. |
-| `make format` | Auto-format Python files with black. |
+| `make venv` | Create `.venv`. |
+| `make install` | Install runtime and test dependencies. |
+| `make install-dev` | Install black, flake8, and bandit. |
+| `make run` | Start the API server locally. |
+| `make test` | Run the pytest suite. |
+| `make lint` | Run flake8 and `black --check`. |
+| `make format` | Auto-format with black. |
+| `make security` | Run the bandit scan used in CI. |
+| `make check` | Run lint, security, and tests (mirrors CI). |
 | `make docker-build` | Build the container image. |
-| `make docker-run` | Run the containerized service. |
-| `make clean` | Clean pycache and temporary build artifacts. |
+| `make docker-run` | Run the container in the background. |
+| `make docker-stop` | Stop and remove the container. |
+| `make docker-logs` | Follow container logs. |
+| `make clean` | Remove caches and temporary artifacts. |
 
 ## Frequently Asked Questions
 

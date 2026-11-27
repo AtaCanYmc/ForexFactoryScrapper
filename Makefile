@@ -1,42 +1,55 @@
-.PHONY: help install run test lint format docker-build docker-run clean
+.DEFAULT_GOAL := help
+.PHONY: help venv install install-dev run test lint format security check docker-build docker-run docker-stop docker-logs clean
 
-PYTHON ?= python3
-PIP ?= pip
+VENV ?= .venv
+# Use the virtualenv interpreter when it exists, otherwise fall back to the system one.
+PYTHON ?= $(if $(wildcard $(VENV)/bin/python),$(VENV)/bin/python,python3)
+IMAGE ?= forexfactory-scrapper
+PORT ?= 5000
 
-help:
-	@echo "Available targets:"
-	@echo "  make install      Install application dependencies"
-	@echo "  make run          Start the API server locally"
-	@echo "  make test         Execute test suite via pytest"
-	@echo "  make lint         Run linters (flake8, black check)"
-	@echo "  make format       Auto-format codebase with black"
-	@echo "  make docker-build Build Docker image"
-	@echo "  make docker-run   Run Docker container"
-	@echo "  make clean        Remove cache and temporary build artifacts"
+help: ## Show this help
+	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z_-]+:.*## / {printf "  make %-14s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-install:
-	$(PIP) install -r requirements.txt
+venv: ## Create the virtualenv in .venv
+	python3 -m venv $(VENV)
 
-run:
+install: ## Install runtime and test dependencies
+	$(PYTHON) -m pip install -r requirements.txt
+
+install-dev: install ## Install lint and security tools (black, flake8, bandit)
+	$(PYTHON) -m pip install black flake8 bandit
+
+run: ## Start the API server locally
 	$(PYTHON) main.py
 
-test:
+test: ## Run the test suite
 	$(PYTHON) -m pytest -q
 
-lint:
+lint: ## Run flake8 and black --check
 	$(PYTHON) -m flake8
 	$(PYTHON) -m black --check .
 
-format:
+format: ## Auto-format with black
 	$(PYTHON) -m black .
 
-docker-build:
-	docker build -t forexfactory-scrapper .
+security: ## Run the bandit scan used in CI
+	$(PYTHON) -m bandit -q -r src/
 
-docker-run:
-	docker run -d -p 5000:5000 --name forexfactory-scrapper forexfactory-scrapper
+check: lint security test ## Run lint, security scan, and tests (mirrors CI)
 
-clean:
-	find . -type d -name "__pycache__" -exec rm -rf {} +
-	find . -type f -name "*.pyc" -delete
-	rm -rf .pytest_cache site .coverage
+docker-build: ## Build the Docker image
+	docker build -t $(IMAGE) .
+
+docker-run: ## Run the container in the background on PORT (default 5000)
+	docker run -d -p $(PORT):5000 --name $(IMAGE) $(IMAGE)
+
+docker-stop: ## Stop and remove the container
+	-docker rm -f $(IMAGE)
+
+docker-logs: ## Follow container logs
+	docker logs -f $(IMAGE)
+
+clean: ## Remove caches and build artifacts
+	find . -type d -name "__pycache__" -not -path "./$(VENV)/*" -exec rm -rf {} +
+	find . -type f -name "*.pyc" -not -path "./$(VENV)/*" -delete
+	rm -rf .pytest_cache .coverage
