@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/AtaCanYmc/ForexFactoryScrapper/compare/v2.1.0...v2.2.0) (2026-11-27)
+
+
+### Features
+
+* Prometheus metrics, API key auth, Redis cache backend, Helm CI (v2.3.0) ([8bdcebc](https://github.com/AtaCanYmc/ForexFactoryScrapper/commit/8bdcebcb9d197f7e38975f6a6047ca1e90a064f8))
+
 ## [2.1.0](https://github.com/AtaCanYmc/ForexFactoryScrapper/compare/v2.0.1...v2.1.0) (2026-11-27)
 
 
