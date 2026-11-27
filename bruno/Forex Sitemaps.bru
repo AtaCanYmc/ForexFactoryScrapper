@@ -1,0 +1,21 @@
+meta {
+  name: Forex Sitemaps
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/forex/sitemaps?max_pages=2&limit=10&offset=0
+  body: none
+  auth: none
+}
+
+params:query {
+  max_pages: 2
+  limit: 10
+  offset: 0
+}
+
+assert {
+  res.status: eq 200
+}

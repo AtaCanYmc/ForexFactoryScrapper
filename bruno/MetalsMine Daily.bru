@@ -1,0 +1,23 @@
+meta {
+  name: MetalsMine Daily
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/metalsmine/daily?day=2&month=5&year=2024&limit=5&offset=0
+  body: none
+  auth: none
+}
+
+params:query {
+  day: 2
+  month: 5
+  year: 2024
+  limit: 5
+  offset: 0
+}
+
+assert {
+  res.status: eq 200
+}

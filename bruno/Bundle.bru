@@ -1,0 +1,23 @@
+meta {
+  name: Bundle
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/bundle?start_date=2024-05-01&end_date=2024-05-03&sources=forex,crypto&limit=10&offset=0
+  body: none
+  auth: none
+}
+
+params:query {
+  start_date: 2024-05-01
+  end_date: 2024-05-03
+  sources: forex,crypto
+  limit: 10
+  offset: 0
+}
+
+assert {
+  res.status: eq 200
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Health Probe
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/health?probe=true
+  body: none
+  auth: none
+}
+
+params:query {
+  probe: true
+}
+
+assert {
+  res.status: eq 200
+}

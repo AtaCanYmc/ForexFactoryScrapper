@@ -239,7 +239,7 @@ Test files are located under `tests/`: `test_app.py` covers routes and `test_sec
 
 ## Documentation and Developer Commands
 
-The static landing page in `pages/` is published to GitHub Pages by `.github/workflows/docs.yml` (`index.html`, `index.css`, `index.js`, `llms.txt`, `robots.txt`, `sitemap.xml`).
+A [Bruno](https://www.usebruno.com/) collection lives in `bruno/` (open the folder in Bruno and select the `local` environment). The static landing page in `pages/` is published to GitHub Pages by `.github/workflows/docs.yml` (`index.html`, `index.css`, `index.js`, `llms.txt`, `robots.txt`, `sitemap.xml`).
 
 A `Makefile` is provided to streamline local development and testing:
 
