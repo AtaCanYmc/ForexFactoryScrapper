@@ -4,19 +4,27 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "pages/**"
+      - ".github/workflows/docs.yml"
   pull_request:
     branches:
       - main
+    paths:
+      - "pages/**"
+      - ".github/workflows/docs.yml"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Verify static site assets
         run: |

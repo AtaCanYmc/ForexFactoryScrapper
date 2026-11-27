@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: Test & Lint
@@ -51,42 +55,22 @@ jobs:
 
       - name: Lint (black)
         run: |
-          black --check . || true
+          black --check .
 
       - name: Lint (flake8)
         run: |
-          flake8 || true
+          flake8
 
       - name: Run tests
         run: |
           pytest -q
-
-      - name: Validate Internal Documentation Links
-        run: |
-          python3 -c '
-          import re, glob, os, sys
-          broken = []
-          for f in glob.glob("**/*.md", recursive=True):
-              content = re.sub(r"```[\s\S]*?```", "", open(f, encoding="utf-8").read())
-              content = re.sub(r"`[^`]*`", "", content)
-              for link in re.findall(r"\[.*?\]\((?!https?://|mailto:)(.*?)(?:#.*)?\)", content):
-                  link = link.strip().split("?")[0]
-                  if not link or link.startswith("#"): continue
-                  target = os.path.normpath(os.path.join(os.path.dirname(f), link))
-                  if not os.path.exists(target):
-                      broken.append(f"{f} -> {link}")
-          if broken:
-              print("Broken internal links detected:", broken, file=sys.stderr)
-              sys.exit(1)
-          print("Internal documentation links verified.")
-          '
 
   helm:
     name: Helm Chart
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
@@ -102,3 +86,39 @@ jobs:
           helm template ci deploy/helm/forexfactory-scrapper \
             --set ingress.enabled=true \
             --set ingress.tls.enabled=true > /dev/null
+
+  api-contract:
+    name: API Contract (Bruno)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Install Bruno CLI
+        run: npm install -g @usebruno/cli
+
+      - name: Start API
+        run: |
+          python main.py &
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:5000/api/health && exit 0
+            sleep 1
+          done
+          echo "API did not start" >&2
+          exit 1
+
+      - name: Run offline Bruno requests
+        working-directory: bruno
+        run: |
+          bru run Hello.bru Health.bru Metrics.bru "OpenAPI Spec.bru" \
+            "Error - Invalid Date.bru" "Error - Missing Params.bru" \
+            "Error - Limit Too Large.bru" "Error - Unknown Bundle Source.bru" \
+            --env local

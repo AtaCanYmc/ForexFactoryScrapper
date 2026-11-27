@@ -22,7 +22,7 @@
 
 ```bash
 # Test commands executed
-python -m pytest -q
+make check   # flake8, black --check, bandit, pytest
 ```
 
 ## Checklist

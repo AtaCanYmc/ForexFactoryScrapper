@@ -71,6 +71,17 @@ Add endpoint and pagination unit tests for cryptocraft daily events.
    ```
    The server binds to `http://127.0.0.1:5000` by default.
 
+## Continuous Integration
+
+| Workflow | Checks |
+| :--- | :--- |
+| `ci.yml` | black, flake8, bandit, and pytest on Python 3.10 to 3.12. `helm lint` and `helm template` for the chart. Offline Bruno requests against a running API. |
+| `well-document-gate.yml` | Required governance files, README slop and em-dash lint, internal link check. |
+| `docs.yml` | Verifies and deploys `pages/` to GitHub Pages. |
+| `release-please.yml` | Release PR, version bumps, tags. |
+
+`make check` runs the lint, security, and test steps locally.
+
 ## Versioning & Releases
 
 Release Please owns every version number. Do not edit versions by hand. On each merge to `main` it opens a release PR from Conventional Commits. Merging that PR bumps `version.txt`, `Chart.yaml` (`version` and `appVersion`), and `src/openapi_spec.py` together, updates `CHANGELOG.md`, and creates the `vX.Y.Z` tag. A follow-up job moves the floating `vX` tag. Configuration lives in `release-please-config.json` and `.release-please-manifest.json`. Add a new file to `extra-files` and mark its version line with `x-release-please-version` to bring it under the same control.
