@@ -1,6 +1,8 @@
 apiVersion: v2
 name: forexfactory-scrapper
-description: Flask REST API serving economic calendar events from ForexFactory and sister portals.
+description: >-
+  Flask REST API serving economic calendar events from ForexFactory and sister
+  portals.
 type: application
-version: 2.1.0 # x-release-please-version
-appVersion: "2.1.0" # x-release-please-version
+version: 2.2.0
+appVersion: 2.1.0
